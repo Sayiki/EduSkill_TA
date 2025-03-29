@@ -11,16 +11,21 @@ class PesertaAkun extends Model
     use HasFactory;
 
     protected $table = 'peserta_akun';
-    protected $primaryKey = 'id_peserta';
-    public $incrementing = false; // UUID is not auto-incrementing
-    protected $keyType = 'string'; // UUID is a string
+    protected $keyType = 'string'; 
 
     protected $fillable = [
+        'id_peserta',
         'nama_peserta',
         'nik_peserta',
         'alamat_peserta',
         'jenis_kelamin',
         'pendidikan_peserta',
     ];
+
+    public function peserta()
+    {
+        return $this->belongsTo(Peserta::class, 'id_peserta');
+    }
+
 
 }

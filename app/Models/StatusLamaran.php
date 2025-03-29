@@ -12,9 +12,6 @@ class StatusLamaran extends Model
     use HasFactory;
 
     protected $table = 'status_lamarans';
-    protected $primaryKey = 'id_peserta';
-    public $incrementing = false;
-    protected $keyType = 'string';
     protected $fillable = [
         'id_peserta',
         'nama_pelatihan',

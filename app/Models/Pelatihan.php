@@ -11,9 +11,6 @@ class Pelatihan extends Model
     use HasFactory;
 
     protected $table = 'pelatihan';
-    protected $primaryKey = 'id_pelatihan';
-    public $incrementing = false; // UUID is not auto-incrementing
-    protected $keyType = 'string'; // UUID is a string
 
     protected $fillable = [
         'nama_pelatihan',

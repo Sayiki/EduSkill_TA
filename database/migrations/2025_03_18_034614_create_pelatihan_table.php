@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('jumlah_kuota');
             $table->integer('jumlah_peserta');
             $table->date('waktu_pengumpulan');
-            $table->timestamps();
+            $table->timestamps(); //
         });
     }
 

@@ -14,12 +14,15 @@ return new class extends Migration
         Schema::create('status_lamaran', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_peserta');
-            $table->string('nama_pelatihan', 100);
-            $table->string('status', 10);
+            $table->unsignedBigInteger('id_pelatihan');
+            $table->unsignedBigInteger('id_pelamar');
+            $table->enum('status', ['menunggu', 'diterima', 'ditolak'])->default('menunggu');
             $table->timestamps();
 
             // Foreign key
             $table->foreign('id_peserta')->references('id')->on('peserta')->onDelete('cascade');
+            $table->foreign('id_pelatihan')->references('id')->on('pelatihan')->onDelete('cascade');
+            $table->foreign('id_pelamar')->references('id')->on('daftar_pelatihan')->onDelete('cascade');
         });
     }
 

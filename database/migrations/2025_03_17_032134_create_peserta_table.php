@@ -16,6 +16,10 @@ return new class extends Migration
             $table->string('nama_peserta', 100);
             $table->string('username', 100)->unique();
             $table->string('password', 100);
+            $table->string('nik_peserta', 100);
+            $table->string('jenis_kelamin', 100);
+            $table->string('alamat_peserta', 1000);
+            $table->string('pendidikan_peserta', 100);
             $table->timestamps();
         });
     }

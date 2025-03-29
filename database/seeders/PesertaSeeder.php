@@ -15,13 +15,6 @@ class PesertaSeeder extends Seeder
      */
     public function run(): void
     {
-        // Buat 5 data peserta dummy
-        for ($i = 1; $i <= 5; $i++) {
-            Peserta::create([
-                'nama_peserta' => 'Peserta ' . $i,
-                'username' => 'peserta' . $i,
-                'password' => 'password' . $i, // Password will be hashed by the model's mutator
-            ]);
-        }
+        Peserta::factory()->count(5)->create();
     }
 }

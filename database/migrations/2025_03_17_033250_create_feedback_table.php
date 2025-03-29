@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('feedback', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_peserta', 35);
+            $table->unsignedBigInteger('id_peserta');
             $table->string('comment', 100);
+            $table->integer('rating')->unsigned()->check('rating >= 1 AND rating <= 5');
             $table->timestamps();
+
+            $table->foreign('id_peserta')->references('id')->on('peserta')->onDelete('cascade');
         });
     }
 

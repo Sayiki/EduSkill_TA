@@ -11,9 +11,6 @@ class MemberikanFeedback extends Model
     use HasFactory;
 
     protected $table = 'memberikan_feedback';
-    protected $primaryKey = 'id_peserta';
-    public $incrementing = false;
-    protected $keyType = 'string';
     protected $fillable = [
         'id_peserta',
         'comment',

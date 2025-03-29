@@ -11,8 +11,6 @@ class LaporanAdmin extends Model
     use HasFactory;
 
     protected $table = 'laporan_admin';
-    protected $primaryKey = 'id_laporan';
-    public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [

@@ -11,9 +11,6 @@ class Informasi extends Model
     use HasFactory;
 
     protected $table = 'informasi';
-    protected $primaryKey = 'id_informasi';
-    public $incrementing = false;
-    protected $keyType = 'string';
     protected $fillable = ['isi_informasi', 'kategori', 'foto_informasi'];
 
 

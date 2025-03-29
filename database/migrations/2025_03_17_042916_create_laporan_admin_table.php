@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->timestamp('waktu_upload')->nullable();
             $table->integer('jumlah_peserta')->unsigned();
-            $table->integer('jumlah_lulusan')->unsigned();
+            $table->integer('jumlah_lulusan_bekerja')->unsigned();
             $table->integer('jumlah_pendaftar')->unsigned();
             $table->string('pelatihan_dibuka', 100);
             $table->string('pelatihan_berjalan', 100);

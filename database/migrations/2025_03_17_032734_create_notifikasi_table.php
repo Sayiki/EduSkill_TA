@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('notifikasi', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('id_peserta');
             $table->string('pesan', 95);
             $table->string('status');
             $table->timestamps();
+
+            $table->foreign('id_peserta')->references('id')->on('peserta')->onDelete('cascade');
         });
     }
 
