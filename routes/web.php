@@ -5,6 +5,25 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+use App\Http\Controllers\Api\{
+    AdminController,
+    DaftarPelatihanController,
+    FeedbackController,
+    InformasiGaleriController,
+    InformasiKontakController,
+    InformasiLembagaController,
+    KetuaController,
+    LaporanAdminController,
+    NotifikasiController,
+    PelatihanController,
+    PendidikanController,
+    PesertaController,
+    ProfileYayasanController,
+    ProfileLKPController,
+    ProfileLPKController,
+    StatusLamaranController
+};
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -13,6 +32,11 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+Route::get('/peserta', function () {
+    return inertia('Peserta');
+});
+
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
