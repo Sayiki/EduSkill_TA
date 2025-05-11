@@ -22,22 +22,34 @@ use App\Http\Controllers\Api\{
     ProfileYayasanController,
     ProfileLKPController,
     ProfileLPKController,
-    StatusLamaranController
+    StatusLamaranController,
+    AuthController
 };
-Route::get('/peserta', [PesertaController::class, 'index']);
-Route::get('/admin', [AdminController::class, 'index']);
-Route::get('/daftar-pelatihan', [DaftarPelatihanController::class, 'index']);
-Route::get('/feedback', [FeedbackController::class, 'index']);
-Route::get('/informasi-galeri', [InformasiGaleriController::class, 'index']);
-Route::get('/informasi-kontak', [InformasiKontakController::class, 'index']);
-Route::get('/informasi-lembaga', [InformasiLembagaController::class, 'index']);
-Route::get('/ketua', [KetuaController::class, 'index']);
-Route::get('/laporan-admin', [LaporanAdminController::class, 'index']);
-Route::get('/notifikasi', [NotifikasiController::class, 'index']);
-Route::get('/pelatihan', [PelatihanController::class, 'index']);
-Route::get('/pendidikan', [PendidikanController::class, 'index']);
-Route::get('/profile-yayasan', [ProfileYayasanController::class, 'index']);
-Route::get('/profile-lkp', [ProfileLKPController::class, 'index']);
-Route::get('/profile-lpk', [ProfileLPKController::class, 'index']);
-Route::get('/status-lamaran', [StatusLamaranController::class, 'index']);
+
+Route::post('/login',  [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:api');
+
+
+Route::middleware(['auth:api'])->group(function(){
+    Route::apiResources([
+        'peserta'          => PesertaController::class,
+        'admin'            => AdminController::class,
+        'daftar-pelatihan' => DaftarPelatihanController::class,
+        'feedback'         => FeedbackController::class,
+        'informasi-galeri' => InformasiGaleriController::class,
+        'informasi-kontak' => InformasiKontakController::class,
+        'informasi-lembaga'=> InformasiLembagaController::class,
+        'ketua'            => KetuaController::class,
+        'laporan-admin'    => LaporanAdminController::class,
+        'notifikasi'       => NotifikasiController::class,
+        'pelatihan'        => PelatihanController::class,
+        'pendidikan'       => PendidikanController::class,
+        'profile-yayasan'  => ProfileYayasanController::class,
+        'profile-lkp'      => ProfileLKPController::class,
+        'profile-lpk'      => ProfileLPKController::class,
+        'status-lamaran'   => StatusLamaranController::class,
+    ]);
+});  
+
+
 

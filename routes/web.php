@@ -33,9 +33,6 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/peserta', function () {
-    return inertia('Peserta');
-});
 
 
 Route::get('/dashboard', function () {
@@ -49,3 +46,12 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+
+Route::get('/react/peserta', function () {
+    return inertia('Peserta');
+});
+
+// everything *except* URLs starting with "api/"
+Route::get('/{any}', fn() => Inertia::render('App'))
+     ->where('any', '^(?!api).*$');
