@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('ktp')->nullable();
             $table->string('ijazah')->nullable();
             $table->string('foto')->nullable();
+            $table->enum('status', ['menunggu', 'diterima', 'ditolak'])->default('menunggu');
             $table->timestamps();
         });
     }

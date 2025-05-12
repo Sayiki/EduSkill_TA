@@ -21,7 +21,6 @@ class DatabaseSeeder extends Seeder
             LaporanAdminSeeder::class,
             PelatihanSeeder::class,
             DaftarPelatihanSeeder::class,
-            StatusLamaranSeeder::class,
             InformasiGaleriSeeder::class,
             InformasiKontakSeeder::class,
             InformasiLembagaSeeder::class,

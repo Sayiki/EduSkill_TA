@@ -11,4 +11,67 @@ class InformasiGaleriController extends Controller
     public function index() {
         return response()->json(InformasiGaleri::all());
     }
+
+    /**
+     * POST /api/informasi-galeri
+     */
+    public function store(Request $request)
+    {
+        $payload = $request->validate([
+            'nama_kegiatan' => 'required|string|max:255',
+            'foto_galeri'   => 'nullable|url',
+        ]);
+
+        $item = InformasiGaleri::create($payload);
+
+        return response()->json([
+            'message' => 'Item galeri berhasil dibuat',
+            'data'    => $item
+        ], 201);
+    }
+
+    /**
+     * GET /api/informasi-galeri/{id}
+     */
+    public function show($id)
+    {
+        $item = InformasiGaleri::findOrFail($id);
+
+        return response()->json([
+            'data' => $item
+        ]);
+    }
+
+    /**
+     * PUT /api/informasi-galeri/{id}
+     */
+    public function update(Request $request, $id)
+    {
+        $item = InformasiGaleri::findOrFail($id);
+
+        $payload = $request->validate([
+            'nama_kegiatan' => ['required','string','max:255'],
+            'foto_galeri'   => ['nullable','url'],
+        ]);
+
+        $item->update($payload);
+
+        return response()->json([
+            'message' => 'Item galeri berhasil diperbarui',
+            'data'    => $item
+        ]);
+    }
+
+    /**
+     * DELETE /api/informasi-galeri/{id}
+     */
+    public function destroy($id)
+    {
+        $item = InformasiGaleri::findOrFail($id);
+        $item->delete();
+
+        return response()->json([
+            'message' => 'Item galeri berhasil dihapus'
+        ]);
+    }
 }

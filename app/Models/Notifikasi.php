@@ -13,5 +13,6 @@ class Notifikasi extends Model
     protected $table = 'notifikasi';
     protected $primaryKey = 'id';
     protected $fillable = ['pesan', 'status'];
+    public $timestamps = true;
 
 }
