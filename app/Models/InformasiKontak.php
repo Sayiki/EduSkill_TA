@@ -10,5 +10,10 @@ class InformasiKontak extends Model
 {
     use HasFactory;
     protected $table = 'informasi_kontak';
-    protected $fillable = ['alamat', 'email', 'telepon'];
+    protected $fillable = ['alamat', 'email', 'telepon', 'admin_id'];
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
+    }
 }

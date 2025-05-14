@@ -5,6 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Admin; 
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProfileYayasan>
@@ -21,7 +22,8 @@ class ProfileYayasanFactory extends Factory
         return [
             'deskripsi_yayasan' => $this->faker->paragraph(),
             'nama_yayasan' => $this->faker->company(),
-            'foto_yayasan' => $this->faker->imageUrl()
+            'foto_yayasan' => $this->faker->imageUrl(),
+            'admin_id' => Admin::inRandomOrder()->first()->id,
         ];
     }
 }

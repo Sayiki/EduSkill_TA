@@ -23,6 +23,9 @@ class InformasiKontakController extends Controller
             'telepon' => 'required|string|max:50',
         ]);
 
+        // tambahkan admin_id dari user yang sedang login
+        $payload['admin_id'] = $request->user()->id;
+
         $kontak = InformasiKontak::create($payload);
 
         return response()->json([
@@ -55,6 +58,9 @@ class InformasiKontakController extends Controller
             'email'   => 'required|email|max:255',
             'telepon' => 'required|string|max:50',
         ]);
+
+        // jika ingin merekam siapa admin yang update
+        $payload['admin_id'] = $request->user()->id;
 
         $kontak->update($payload);
 

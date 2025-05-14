@@ -25,6 +25,9 @@ class LaporanAdminController extends Controller
             'pelatihan_berjalan'     => 'required|string|max:100',
         ]);
 
+        // tambahkan admin_id dari user yang sedang login
+        $payload['admin_id'] = $request->user()->id;
+
         $laporan = LaporanAdmin::create($payload);
 
         return response()->json([
@@ -59,6 +62,9 @@ class LaporanAdminController extends Controller
             'pelatihan_dibuka'       => 'sometimes|required|string|max:100',
             'pelatihan_berjalan'     => 'sometimes|required|string|max:100',
         ]);
+
+        // jika ingin merekam siapa admin yang update
+        $payload['admin_id'] = $request->user()->id;
 
         $laporan->update($payload);
 

@@ -33,6 +33,7 @@ class LaporanAdminFactory extends Factory
             'jumlah_pendaftar' => $this->faker->numberBetween(100, 300),
             'pelatihan_dibuka' => $this->faker->sentence(3),
             'pelatihan_berjalan' => $this->faker->sentence(3),
+            'admin_id' => Admin::inRandomOrder()->first()->id
         ];
     }
 }

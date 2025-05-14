@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\Ketua;
+use App\Models\Admin; 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\InformasiKontak>
  */
@@ -22,7 +23,8 @@ class InformasiKontakFactory extends Factory
         return [
             'alamat' => $this->faker->address(),
             'email' => $this->faker->safeEmail(),
-            'telepon' => $this->faker->phoneNumber()
+            'telepon' => $this->faker->phoneNumber(),
+            'admin_id' => Admin::inRandomOrder()->first()->id,
         ];
     }
 }

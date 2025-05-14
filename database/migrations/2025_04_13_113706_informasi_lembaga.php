@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('informasi_lembaga', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('admin_id')
+            ->constrained('admin')
+            ->onDelete('cascade');
             $table->text('visi');
             $table->text('misi');
             $table->timestamps();

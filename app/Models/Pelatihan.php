@@ -14,10 +14,16 @@ class Pelatihan extends Model
 
     protected $fillable = [
         'nama_pelatihan',
+        'admin_id',
         'keterangan_pelatihan',
         'jumlah_kuota',
         'jumlah_peserta',
         'waktu_pengumpulan'
     ];
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
+    }
 
 }

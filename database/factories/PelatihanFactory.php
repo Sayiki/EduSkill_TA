@@ -32,6 +32,7 @@ class PelatihanFactory extends Factory
             'jumlah_kuota' => $this->faker->numberBetween(20, 100),
             'jumlah_peserta' => $this->faker->numberBetween(0, 20),
             'waktu_pengumpulan' => $this->faker->dateTimeBetween('+1 week', '+1 month'),
+            'admin_id' => Admin::inRandomOrder()->first()->id,
         ];
     }
 }

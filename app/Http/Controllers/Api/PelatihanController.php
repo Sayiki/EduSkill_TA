@@ -26,6 +26,9 @@ class PelatihanController extends Controller
             'waktu_pengumpulan'    => 'nullable|date',
         ]);
 
+        // tambahkan admin_id dari user yang sedang login
+        $payload['admin_id'] = $request->user()->id;
+
         $pel = Pelatihan::create($payload);
 
         return response()->json([
@@ -62,6 +65,9 @@ class PelatihanController extends Controller
             'jumlah_peserta'       => 'sometimes|nullable|integer|min:0',
             'waktu_pengumpulan'    => 'sometimes|nullable|date',
         ]);
+
+        // jika ingin merekam siapa admin yang update
+        $payload['admin_id'] = $request->user()->id;
 
         $pel->update($payload);
 

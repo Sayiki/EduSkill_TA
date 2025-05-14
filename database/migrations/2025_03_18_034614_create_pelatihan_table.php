@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('pelatihan', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('admin_id')
+            ->constrained('admin')
+            ->onDelete('cascade');
             $table->string('nama_pelatihan', 100);
             $table->string('keterangan_pelatihan', 350);
             $table->integer('jumlah_kuota');
             $table->integer('jumlah_peserta');
-            $table->date('waktu_pengumpulan');
+            $table->dateTime('waktu_pengumpulan');
             $table->timestamps(); //
         });
     }

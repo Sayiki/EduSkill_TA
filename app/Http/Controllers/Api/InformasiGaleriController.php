@@ -22,6 +22,9 @@ class InformasiGaleriController extends Controller
             'foto_galeri'   => 'nullable|url',
         ]);
 
+        // tambahkan admin_id dari user yang sedang login
+        $payload['admin_id'] = $request->user()->id;
+
         $item = InformasiGaleri::create($payload);
 
         return response()->json([
@@ -53,6 +56,9 @@ class InformasiGaleriController extends Controller
             'nama_kegiatan' => ['required','string','max:255'],
             'foto_galeri'   => ['nullable','url'],
         ]);
+
+        // jika ingin merekam siapa admin yang update
+        $payload['admin_id'] = $request->user()->id;
 
         $item->update($payload);
 

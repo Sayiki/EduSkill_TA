@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('profile_yayasan', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('admin_id')
+            ->constrained('admin')
+            ->onDelete('cascade');
             $table->text('deskripsi_yayasan');
             $table->string('nama_yayasan');
             $table->string('foto_yayasan')->nullable();

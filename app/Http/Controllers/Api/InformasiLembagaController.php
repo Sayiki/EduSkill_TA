@@ -22,6 +22,9 @@ class InformasiLembagaController extends Controller
             'misi' => 'required|string',
         ]);
 
+        // tambahkan admin_id dari user yang sedang login
+        $payload['admin_id'] = $request->user()->id;
+
         $lembaga = InformasiLembaga::create($payload);
 
         return response()->json([
@@ -53,6 +56,9 @@ class InformasiLembagaController extends Controller
             'visi' => 'required|string',
             'misi' => 'required|string',
         ]);
+
+        // jika ingin merekam siapa admin yang update
+        $payload['admin_id'] = $request->user()->id;
 
         $lembaga->update($payload);
 

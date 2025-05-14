@@ -10,5 +10,10 @@ class ProfileYayasan extends Model
 {
     use HasFactory;
     protected $table = 'profile_yayasan';
-    protected $fillable = ['deskripsi_yayasan', 'nama_yayasan', 'foto_yayasan'];
+    protected $fillable = ['deskripsi_yayasan', 'nama_yayasan', 'foto_yayasan', 'admin_id'];
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
+    }
 }

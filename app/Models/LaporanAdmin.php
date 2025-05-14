@@ -14,12 +14,18 @@ class LaporanAdmin extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'admin_id',
         'jumlah_peserta',
         'jumlah_lulusan',
         'jumlah_pendaftar',
         'pelatihan_dibuka',
         'pelatihan_berjalan',
     ];
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
+    }
 
 
 }

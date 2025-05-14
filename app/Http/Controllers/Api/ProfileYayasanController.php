@@ -21,6 +21,9 @@ class ProfileYayasanController extends Controller
             'foto_yayasan'      => 'nullable|string',
         ]);
 
+        // tambahkan admin_id dari user yang sedang login
+        $payload['admin_id'] = $request->user()->id;
+
         $yayasan = ProfileYayasan::create($data);
 
         return response()->json([
@@ -47,6 +50,9 @@ class ProfileYayasanController extends Controller
             'deskripsi_yayasan' => 'required|string',
             'foto_yayasan'      => 'nullable|string',
         ]);
+
+        // jika ingin merekam siapa admin yang update
+        $payload['admin_id'] = $request->user()->id;
 
         $yayasan->update($data);
 

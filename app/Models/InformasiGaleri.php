@@ -10,5 +10,10 @@ class InformasiGaleri extends Model
 {
     use HasFactory;
     protected $table = 'informasi_galeri';
-    protected $fillable = ['nama_kegiatan', 'foto_galeri'];
+    protected $fillable = ['nama_kegiatan', 'foto_galeri', 'admin_id'];
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
+    }
 }

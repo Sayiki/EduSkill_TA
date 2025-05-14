@@ -10,5 +10,10 @@ class InformasiLembaga extends Model
 {
     use HasFactory;
     protected $table = 'informasi_lembaga';
-    protected $fillable = ['visi', 'misi'];
+    protected $fillable = ['visi', 'misi', 'admin_id'];
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
+    }
 }
