@@ -8,57 +8,58 @@ use App\Models\ProfileLPK;
 
 class ProfileLPKController extends Controller
 {
-    public function index() {
-        return response()->json(ProfileLPK::all());
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', 10);
+
+        $items = ProfileLPK::paginate($perPage);
+
+        return response()->json($items);
     }
 
-    // POST /api/profile-lpk
     public function store(Request $request)
     {
         $data = $request->validate([
-            'id_lembaga'     => 'required|exists:informasi_lembaga,id_lembaga',
-            'nama_lpk'       => 'required|string|max:255',
-            'deskripsi_lpk'  => 'required|string',
-            'foto_lpk'       => 'nullable|string',
+            'id_lembaga'    => 'required|exists:informasi_lembaga,id',
+            'nama_lpk'      => 'required|string|max:255',
+            'deskripsi_lpk' => 'required|string',
+            'foto_lpk'      => 'nullable|string',
         ]);
 
-        $lpk = ProfileLPK::create($data);
+        $item = ProfileLPK::create($data);
 
         return response()->json([
             'message' => 'Profile LPK berhasil dibuat',
-            'data'    => $lpk,
+            'data'    => $item,
         ], 201);
     }
 
-    // GET /api/profile-lpk/{id}
     public function show($id)
     {
-        $lpk = ProfileLPK::findOrFail($id);
+        $item = ProfileLPK::findOrFail($id);
 
-        return response()->json(['data' => $lpk]);
+        return response()->json(['data' => $item]);
     }
 
-    // PUT /api/profile-lpk/{id}
     public function update(Request $request, $id)
     {
-        $lpk = ProfileLPK::findOrFail($id);
+        $item = ProfileLPK::findOrFail($id);
 
         $data = $request->validate([
-            'id_lembaga'     => 'required|exists:informasi_lembaga,id_lembaga',
-            'nama_lpk'       => 'required|string|max:255',
-            'deskripsi_lpk'  => 'required|string',
-            'foto_lpk'       => 'nullable|string',
+            'id_lembaga'    => 'required|exists:informasi_lembaga,id',
+            'nama_lpk'      => 'required|string|max:255',
+            'deskripsi_lpk' => 'required|string',
+            'foto_lpk'      => 'nullable|string',
         ]);
 
-        $lpk->update($data);
+        $item->update($data);
 
         return response()->json([
             'message' => 'Profile LPK berhasil diperbarui',
-            'data'    => $lpk,
+            'data'    => $item,
         ]);
     }
 
-    // DELETE /api/profile-lpk/{id}
     public function destroy($id)
     {
         ProfileLPK::findOrFail($id)->delete();

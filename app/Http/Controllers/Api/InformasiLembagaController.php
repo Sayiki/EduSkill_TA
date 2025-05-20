@@ -8,8 +8,13 @@ use App\Models\InformasiLembaga;
 
 class InformasiLembagaController extends Controller
 {
-    public function index(){
-        return response()->json(InformasiLembaga::all());
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', 10);
+
+        $lembaga = InformasiLembaga::paginate($perPage);
+
+        return response()->json($lembaga);
     }
 
     /**

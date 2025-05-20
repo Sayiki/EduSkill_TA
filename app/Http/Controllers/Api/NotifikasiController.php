@@ -8,8 +8,13 @@ use App\Models\Notifikasi;
 
 class NotifikasiController extends Controller
 {
-    public function index() {
-        return response()->json(Notifikasi::all());
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', 10);
+
+        $ntf = Notifikasi::paginate($perPage);
+
+        return response()->json($ntf);
     }
     
     /**

@@ -47,7 +47,6 @@ Route::middleware(['auth:api'])->group(function(){
         'profile-yayasan'  => ProfileYayasanController::class,
         'profile-lkp'      => ProfileLKPController::class,
         'profile-lpk'      => ProfileLPKController::class,
-        'status-lamaran'   => StatusLamaranController::class,
     ]);
 });  
 

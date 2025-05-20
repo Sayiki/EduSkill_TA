@@ -8,11 +8,15 @@ use App\Models\ProfileYayasan;
 
 class ProfileYayasanController extends Controller
 {
-    public function index() {
-        return response()->json(ProfileYayasan::all());
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', 10);
+
+        $items = ProfileYayasan::paginate($perPage);
+
+        return response()->json($items);
     }
 
-    // POST /api/profile-yayasan
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -21,29 +25,27 @@ class ProfileYayasanController extends Controller
             'foto_yayasan'      => 'nullable|string',
         ]);
 
-        // tambahkan admin_id dari user yang sedang login
-        $payload['admin_id'] = $request->user()->id;
+        // rekam siapa admin yang buat
+        $data['admin_id'] = $request->user()->id;
 
-        $yayasan = ProfileYayasan::create($data);
+        $item = ProfileYayasan::create($data);
 
         return response()->json([
             'message' => 'Profile Yayasan berhasil dibuat',
-            'data'    => $yayasan,
+            'data'    => $item,
         ], 201);
     }
 
-    // GET /api/profile-yayasan/{id}
     public function show($id)
     {
-        $yayasan = ProfileYayasan::findOrFail($id);
+        $item = ProfileYayasan::findOrFail($id);
 
-        return response()->json(['data' => $yayasan]);
+        return response()->json(['data' => $item]);
     }
 
-    // PUT /api/profile-yayasan/{id}
     public function update(Request $request, $id)
     {
-        $yayasan = ProfileYayasan::findOrFail($id);
+        $item = ProfileYayasan::findOrFail($id);
 
         $data = $request->validate([
             'nama_yayasan'      => 'required|string|max:255',
@@ -51,18 +53,17 @@ class ProfileYayasanController extends Controller
             'foto_yayasan'      => 'nullable|string',
         ]);
 
-        // jika ingin merekam siapa admin yang update
-        $payload['admin_id'] = $request->user()->id;
+        // rekam siapa admin yang ubah
+        $data['admin_id'] = $request->user()->id;
 
-        $yayasan->update($data);
+        $item->update($data);
 
         return response()->json([
             'message' => 'Profile Yayasan berhasil diperbarui',
-            'data'    => $yayasan,
+            'data'    => $item,
         ]);
     }
 
-    // DELETE /api/profile-yayasan/{id}
     public function destroy($id)
     {
         ProfileYayasan::findOrFail($id)->delete();

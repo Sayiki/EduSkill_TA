@@ -8,8 +8,13 @@ use App\Models\LaporanAdmin;
 
 class LaporanAdminController extends Controller
 {
-    public function index() {
-        return response()->json(LaporanAdmin::all());
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', 10);
+
+        $laporan = LaporanAdmin::paginate($perPage);
+
+        return response()->json($laporan);
     }
 
     /**

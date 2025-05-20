@@ -10,14 +10,15 @@ use App\Models\User;
 class PesertaController extends Controller
 {
     // ✅ GET /api/peserta
-    public function index()
+    public function index(Request $request)   // ← inject the Request
     {
-        $peserta = Peserta::with(['user', 'pendidikan'])->get();
+        // allow client to pass ?per_page=… (default to 15)
+        $perPage = $request->query('per_page', 10);
 
-        return response()->json([
-            'message' => 'List of peserta',
-            'data' => $peserta
-        ]);
+        $paginator = Peserta::with(['user', 'pendidikan'])
+            ->paginate($perPage);
+
+        return response()->json($paginator);
     }
 
     public function store(Request $request)

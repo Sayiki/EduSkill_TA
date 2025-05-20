@@ -8,8 +8,13 @@ use App\Models\Pendidikan;
 
 class PendidikanController extends Controller
 {
-    public function index() {
-        return response()->json(Pendidikan::all());
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', 10);
+
+        $pend = Pendidikan::paginate($perPage);
+
+        return response()->json($pend);
     }
 
     /**

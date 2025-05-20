@@ -8,8 +8,13 @@ use App\Models\InformasiGaleri;
 
 class InformasiGaleriController extends Controller
 {
-    public function index() {
-        return response()->json(InformasiGaleri::all());
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', 10);
+
+        $items = InformasiGaleri::paginate($perPage);
+
+        return response()->json($items);
     }
 
     /**

@@ -8,8 +8,14 @@ use App\Models\Feedback;
 
 class FeedbackController extends Controller
 {
-    public function index() {
-        return response()->json(Feedback::with('peserta')->get());
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', 10);
+
+        $fb = Feedback::with('peserta')
+                    ->paginate($perPage);
+
+        return response()->json($fb);
     }
 
     public function store(Request $request)

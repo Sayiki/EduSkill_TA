@@ -8,8 +8,14 @@ use App\Models\DaftarPelatihan;
 
 class DaftarPelatihanController extends Controller
 {
-    public function index() {
-        return response()->json(DaftarPelatihan::with(['peserta','pelatihan'])->get());
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', 10);
+
+        $entries = DaftarPelatihan::with(['peserta','pelatihan'])
+                      ->paginate($perPage);
+
+        return response()->json($entries);
     }
 
     public function store(Request $request)

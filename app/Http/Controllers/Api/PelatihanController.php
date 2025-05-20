@@ -8,8 +8,13 @@ use App\Models\Pelatihan;
 
 class PelatihanController extends Controller
 {
-    public function index() {
-        return response()->json(Pelatihan::all());
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', 10);
+
+        $pel = Pelatihan::paginate($perPage);
+
+        return response()->json($pel);
     }
 
     /**

@@ -8,8 +8,13 @@ use App\Models\InformasiKontak;
 
 class InformasiKontakController extends Controller
 {
-    public function index() {
-        return response()->json(InformasiKontak::all());
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', 10);
+
+        $contacts = InformasiKontak::paginate($perPage);
+
+        return response()->json($contacts);
     }
 
     /**
