@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('peserta', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); 
-            $table->string('nik_peserta', 100);
-            $table->string('jenis_kelamin', 100);
-            $table->string('alamat_peserta', 1000);
+            $table->string('nik_peserta', 100)->nullable();
+            $table->string('jenis_kelamin', 100)->nullable();
+            $table->string('alamat_peserta', 1000)->nullable();
+            $table->string('nomor_telp')->nullable();
             $table->unsignedBigInteger('id_pendidikan')->nullable();
             $table->timestamps();
         

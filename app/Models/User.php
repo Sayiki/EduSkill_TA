@@ -13,7 +13,14 @@ class User extends Authenticatable implements JWTSubject
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'peran'];
+    protected $fillable = [
+        'email',
+        'username',
+        'name',
+        'nomor_telp',
+        'password',
+        'peran',
+    ];
 
     public function peserta()
     {

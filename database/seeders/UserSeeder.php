@@ -28,6 +28,7 @@ class UserSeeder extends Seeder
         // 1 Admin
         $adminUser = User::factory()->admin()->create([
             'name' => 'Admin Guy',
+            'username' => 'admin',
             'email' => 'admin@example.com',
         ]);
         
@@ -39,6 +40,7 @@ class UserSeeder extends Seeder
         // 1 Ketua
         $ketuaUser = User::factory()->ketua()->create([
             'name' => 'Ketua Boss',
+            'username' => 'ketua',
             'email' => 'ketua@example.com',
         ]);
         

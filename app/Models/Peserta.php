@@ -18,7 +18,8 @@ class Peserta extends Model
         'nik_peserta', 
         'jenis_kelamin',
         'alamat_peserta', 
-        'id_pendidikan'
+        'id_pendidikan',
+        'nomor_telp',
     ];
 
     public function user()
