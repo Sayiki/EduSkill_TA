@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('jenis_kelamin', 100)->nullable();
             $table->string('alamat_peserta', 1000)->nullable();
             $table->string('nomor_telp')->nullable();
+            $table->enum('status_lulus', ['lulus', 'tidak lulus', 'belum dinilai'])->default('belum dinilai');
             $table->unsignedBigInteger('id_pendidikan')->nullable();
             $table->timestamps();
         
