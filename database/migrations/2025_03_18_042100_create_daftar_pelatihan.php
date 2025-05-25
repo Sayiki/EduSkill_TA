@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('daftar_pelatihan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_peserta')->constrained('peserta')->onDelete('cascade'); // untuk ambil data nama_peserta, nik_peserta, alamat_peserta, pendidikan peserta
-            $table->foreignId('id_pelatihan')->constrained('pelatihan')->onDelete('cascade'); // untuk pilih pelatihan
+            $table->foreignId('id_peserta')->constrained('peserta')->onDelete('cascade'); 
+            $table->foreignId('id_pelatihan')->constrained('pelatihan')->onDelete('cascade'); 
             $table->string('kk')->nullable(); 
             $table->string('ktp')->nullable();
             $table->string('ijazah')->nullable();
             $table->string('foto')->nullable();
-            $table->enum('status', ['menunggu', 'diterima', 'ditolak'])->default('menunggu');
+            $table->enum('status', ['ditinjau', 'diterima', 'ditolak'])->default('ditinjau');
             $table->timestamps();
         });
     }

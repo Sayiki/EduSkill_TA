@@ -9,6 +9,7 @@ use App\Models\Peserta;
 use App\Models\Pendidikan;
 use App\Models\Admin;
 use App\Models\Ketua;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
@@ -30,6 +31,7 @@ class UserSeeder extends Seeder
             'name' => 'Admin Guy',
             'username' => 'admin',
             'email' => 'admin@example.com',
+            'password' => Hash::make('password'),
         ]);
         
         Admin::factory()->create([
@@ -42,6 +44,7 @@ class UserSeeder extends Seeder
             'name' => 'Ketua Boss',
             'username' => 'ketua',
             'email' => 'ketua@example.com',
+            'password' => Hash::make('password'),
         ]);
         
         Ketua::factory()->create([

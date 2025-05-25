@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('deskripsi_lkp');
             $table->string('foto_lkp')->nullable();
             $table->timestamps();
-        
+
             $table->foreign('id_lembaga')->references('id')->on('informasi_lembaga')->onDelete('cascade');
         });
         

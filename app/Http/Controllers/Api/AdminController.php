@@ -85,10 +85,14 @@ class AdminController extends Controller
             return response()->json(['error' => 'Admin tidak ditemukan'], 404);
         }
 
+        // Hapus user yang berelasi dengan admin ini
+        $admin->user()->delete();
+
+        // Hapus admin-nya
         $admin->delete();
 
         return response()->json([
-            'message' => 'Admin berhasil dihapus',
+            'message' => 'Admin dan User terkait berhasil dihapus',
         ]);
     }
 

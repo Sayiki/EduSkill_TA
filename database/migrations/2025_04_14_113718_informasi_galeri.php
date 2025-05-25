@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('informasi_galeri', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('admin_id')
-            ->constrained('admin')
-            ->onDelete('cascade');
+            $table->unsignedBigInteger('admin_id');
+            $table->foreign('admin_id')->references('id')->on('admin')->onDelete('restrict');
             $table->string('nama_kegiatan');
             $table->string('foto_galeri')->nullable();
             $table->timestamps();

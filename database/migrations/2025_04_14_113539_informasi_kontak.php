@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('informasi_kontak', function(Blueprint $table){
             $table->id();
-            $table->foreignId('admin_id')
-            ->constrained('admin')
-            ->onDelete('cascade');
+            $table->unsignedBigInteger('admin_id');
+            $table->foreign('admin_id')->references('id')->on('admin')->onDelete('restrict');
             $table->string('alamat');
             $table->string('email');
             $table->string('telepon');

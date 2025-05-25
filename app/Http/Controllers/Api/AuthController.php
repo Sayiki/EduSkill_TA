@@ -24,35 +24,29 @@ class AuthController extends Controller
         $user = User::where('username', $data['username'])->first();
 
         if (!$user || !Hash::check($data['password'], $user->password)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+            return response()->json(['error' => 'Username atau password salah.'], 401);
         }
 
-        switch ($user->peran) {
-            case 'admin':
-            case 'ketua':
-                // Issue JWT token for admin and ketua
-                $token = JWTAuth::fromUser($user);
-                return response()->json([
-                    'access_token' => $token,
-                    'token_type' => 'bearer',
-                    'role' => $user->peran,
-                    'user' => $user,
-                    'expires_in' => JWTAuth::factory()->getTTL() * 60,
-                ]);
-            
-            case 'peserta':
-                // Peserta logs in but no JWT token issued
-                return response()->json([
-                    'message' => 'Peserta logged in successfully',
-                    'role' => $user->peran,
-                    'user' => $user,
-                ]);
-            
-            default:
-                return response()->json([
-                    'error' => 'Unauthorized role'
-                ], 403);
+        // --- REVISED TOKEN GENERATION ---
+        // Add the 'peran' as a custom claim into the token itself.
+        $customClaims = ['peran' => $user->peran];
+
+        // Generate the token with the custom claims for the user.
+        $token = JWTAuth::customClaims($customClaims)->fromUser($user);
+
+        // Eager load the specific profile based on the user's 'peran'
+        // This attaches the Peserta, Admin, or Ketua details to the user object.
+        if ($user->peran && in_array($user->peran, ['peserta', 'admin', 'ketua'])) {
+            $user->load($user->peran);
         }
+
+        // Return a single, consistent response for all roles.
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
+            'user' => $user
+        ]);
     }
 
 
