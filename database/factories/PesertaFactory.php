@@ -34,6 +34,8 @@ class PesertaFactory extends Factory
             'alamat_peserta' => $this->faker->address(),
             'nomor_telp' => $this->faker->numerify('08##########'),
             'id_pendidikan' => null,
+            'foto_peserta' => $this->faker->imageUrl(400, 400, 'people', true),
+            
         ];
     }
 }

@@ -11,19 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('informasi_galeri', function (Blueprint $table) {
+        Schema::create('slideshow', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('admin_id')->nullable();
-            $table->string('nama_kegiatan');
-            $table->string('foto_galeri')->nullable();
+            $table->string('nama_slide');
+            $table->string('gambar');
 
+            $table->unsignedBigInteger('admin_id')->nullable();
             $table->foreign('admin_id')
-                  ->references('id')->on('admin')
-                  ->onUpdate('cascade')
-                  ->onDelete('set null');
+                ->references('id')->on('admin')
+                ->onUpdate('cascade')
+                ->onDelete('set null');
+
             $table->timestamps();
         });
-        
     }
 
     /**
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('informasi_galeri');
+        Schema::dropIfExists('slideshow');
     }
 };

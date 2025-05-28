@@ -13,8 +13,11 @@ return new class extends Migration
     {
         Schema::create('pelatihan', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('admin_id');
-            $table->foreign('admin_id')->references('id')->on('admin')->onDelete('restrict');
+            $table->unsignedBigInteger('admin_id')->nullable();
+            $table->foreign('admin_id')
+                  ->references('id')->on('admin')
+                  ->onUpdate('cascade')
+                  ->onDelete('set null');
             $table->string('nama_pelatihan', 100);
             $table->string('keterangan_pelatihan', 350);
             $table->integer('jumlah_kuota');

@@ -15,11 +15,15 @@ class Peserta extends Model
 
     protected $fillable = [
         'user_id',
-        'nik_peserta', 
+        'foto_peserta',
+        'nik_peserta',
         'jenis_kelamin',
-        'alamat_peserta', 
-        'id_pendidikan',
+        'tanggal_lahir', 
+        'alamat_peserta',
         'nomor_telp',
+        'status_lulus',
+        'status_kerja',
+        'id_pendidikan',
     ];
 
     public function user()

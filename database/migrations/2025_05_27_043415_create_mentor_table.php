@@ -11,19 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('informasi_galeri', function (Blueprint $table) {
+        Schema::create('mentor', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('admin_id')->nullable();
-            $table->string('nama_kegiatan');
-            $table->string('foto_galeri')->nullable();
-
+            $table->unsignedBigInteger('admin_id')->nullable()->comment('ID admin yang mengelola mentor');
             $table->foreign('admin_id')
                   ->references('id')->on('admin')
                   ->onUpdate('cascade')
                   ->onDelete('set null');
+            $table->string('nama_mentor');
             $table->timestamps();
         });
-        
     }
 
     /**
@@ -31,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('informasi_galeri');
+        Schema::dropIfExists('mentor');
     }
 };

@@ -27,6 +27,10 @@ class DatabaseSeeder extends Seeder
             ProfileYayasanSeeder::class,
             ProfileLKPSeeder::class,
             ProfileLPKSeeder::class,
+            BeritaSeeder::class,
+            BannerSeeder::class,
+            SlideshowSeeder::class,
+            MentorSeeder::class,
         ]);
     }
 }

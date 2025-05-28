@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('id_peserta');
             $table->text('comment');
-            $table->integer('rating')->unsigned()->check('rating >= 1 AND rating <= 5');
+            $table->string('status_kerja',20)->nullable();
             $table->timestamps();
-
+            
             $table->foreign('id_peserta')->references('id')->on('peserta')->onDelete('cascade');
         });
     }

@@ -13,8 +13,11 @@ return new class extends Migration
     {
         Schema::create('informasi_lembaga', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('admin_id');
-            $table->foreign('admin_id')->references('id')->on('admin')->onDelete('restrict');
+            $table->unsignedBigInteger('admin_id')->nullable();
+            $table->foreign('admin_id')
+                  ->references('id')->on('admin')
+                  ->onUpdate('cascade')
+                  ->onDelete('set null');
             $table->text('visi');
             $table->text('misi');
             $table->timestamps();

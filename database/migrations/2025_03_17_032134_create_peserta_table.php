@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('peserta', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); 
+            $table->string('foto_peserta')->nullable();
             $table->string('nik_peserta', 100)->nullable();
-            $table->string('jenis_kelamin', 100)->nullable();
+            $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan'])->nullable();
+            $table->date('tanggal_lahir')->nullable();
             $table->string('alamat_peserta', 1000)->nullable();
             $table->string('nomor_telp')->nullable();
             $table->enum('status_lulus', ['lulus', 'tidak lulus', 'belum dinilai'])->default('belum dinilai');

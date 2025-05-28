@@ -13,7 +13,6 @@ use App\Models\LaporanAdmin;
 use App\Models\Ketua;
 use App\Models\Pelatihan;
 use App\Models\DaftarPelatihan;
-use App\Models\StatusLamaran;
 
 class FeedbackSeeder extends Seeder
 {

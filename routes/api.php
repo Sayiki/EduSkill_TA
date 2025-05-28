@@ -34,12 +34,14 @@ Route::post('/logout', [AuthController::class, 'logout']);
 Route::middleware(['jwt.auth'])->group(function () {
     Route::middleware(['peran:peserta'])->group(function () {
         Route::post('/daftar-pelatihan', [DaftarPelatihanController::class, 'store']);
+        Route::get('/peserta/{id}', [PesertaController::class, 'show']);
+        Route::put('/peserta/{id}', [PesertaController::class, 'update']);
+        
     });
 
 
-    Route::middleware(['auth:admin'])->group(function(){
+    Route::middleware(['peran:admin'])->group(function(){
         Route::apiResources([
-            'peserta'          => PesertaController::class,
             'admin'            => AdminController::class,
             'feedback'         => FeedbackController::class,
             'informasi-galeri' => InformasiGaleriController::class,
@@ -54,6 +56,11 @@ Route::middleware(['jwt.auth'])->group(function () {
             'profile-lkp'      => ProfileLKPController::class,
             'profile-lpk'      => ProfileLPKController::class,
         ]);
+        Route::get('/daftar-pelatihan', [DaftarPelatihanController::class, 'index']);
+        Route::put('/daftar-pelatihan/{id}', [DaftarPelatihanController::class, 'update']);
+        Route::get('/daftar-pelatihan/{id}', [DaftarPelatihanController::class, 'show']);
+        Route::delete('/daftar-pelatihan/{id}', [DaftarPelatihanController::class, 'destroy']);
+        Route::delete('/peserta/{id}', [PesertaController::class, 'destroy']);
     });  
 
 });
