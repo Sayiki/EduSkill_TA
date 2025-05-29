@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use App\Models\Admin;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -30,6 +31,11 @@ class User extends Authenticatable implements JWTSubject
     public function admin()
     {
         return $this->hasOne(Admin::class, 'user_id');
+    }
+
+    public function adminProfile()
+    {
+        return $this->hasOne(Admin::class, 'user_id', 'id');
     }
 
     public function ketua()

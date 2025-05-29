@@ -16,4 +16,15 @@ class Mentor extends Model
         'deskripsi_singkat',
         'foto_mentor',
     ];
+
+    public function adminProfile() 
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
+    }
+
+    // Relasi ke Pelatihan (seorang mentor bisa memiliki banyak pelatihan)
+    public function pelatihan()
+    {
+        return $this->hasMany(Pelatihan::class, 'mentor_id');
+    }
 }

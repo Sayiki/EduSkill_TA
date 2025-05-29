@@ -14,4 +14,9 @@ class Slideshow extends Model
         'nama_slide',
         'gambar',
     ];
+
+    public function adminProfile() 
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
+    }
 }

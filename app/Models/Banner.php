@@ -14,4 +14,8 @@ class Banner extends Model
         'nama_banner',
         'gambar',
     ];
+    public function adminProfile() 
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
+    }
 }
