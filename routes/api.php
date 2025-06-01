@@ -112,7 +112,7 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('/informasi-lembaga', [InformasiLembagaController::class, 'store']);
         Route::post('/my-laporan-admin', [LaporanAdminController::class, 'storeOrUpdateMyLaporan']);
         Route::get('/my-laporan-admin', [LaporanAdminController::class, 'showMyLaporan']);
-        Route::post('/notifikasi', [NotifikasiController::class, 'storeForAdmin']);
+        Route::post('/notifikasi/pengumuman', [NotifikasiController::class, 'sendAnnouncementToAllPeserta']);
         Route::post('/pelatihan', [PelatihanController::class, 'store']);
         Route::put('/pelatihan/{id}', [PelatihanController::class, 'update']);
         Route::delete('/pelatihan/{id}', [PelatihanController::class, 'destroy']);
