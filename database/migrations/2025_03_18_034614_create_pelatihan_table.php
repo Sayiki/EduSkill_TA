@@ -18,6 +18,11 @@ return new class extends Migration
                   ->references('id')->on('admin')
                   ->onUpdate('cascade')
                   ->onDelete('set null');
+            $table->unsignedBigInteger('mentor_id')->nullable()->after('admin_id');
+            $table->foreign('mentor_id')
+                      ->references('id')->on('mentor')
+                      ->onUpdate('cascade')
+                      ->onDelete('set null');
             $table->string('nama_pelatihan', 100);
             $table->string('keterangan_pelatihan', 350);
             $table->integer('jumlah_kuota');

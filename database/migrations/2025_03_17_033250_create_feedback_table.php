@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('id_peserta');
             $table->text('comment');
-            $table->string('status_kerja',20)->nullable();
+            $table->string('pekerjaan',50)->nullable();
             $table->timestamps();
             
             $table->foreign('id_peserta')->references('id')->on('peserta')->onDelete('cascade');

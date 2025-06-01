@@ -12,7 +12,11 @@ class Notifikasi extends Model
 
     protected $table = 'notifikasi';
     protected $primaryKey = 'id';
-    protected $fillable = ['pesan', 'status'];
+    protected $fillable = ['id_peserta','pesan', 'status'];
     public $timestamps = true;
 
+    public function peserta()
+    {
+        return $this->belongsTo(Peserta::class, 'id_peserta');
+    }
 }

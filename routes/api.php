@@ -46,6 +46,26 @@ Route::get('/slideshow/{id}', [SlideshowController::class, 'show']);
 Route::get('/mentor', [MentorController::class, 'index']);
 Route::get('/mentor/{id}', [MentorController::class, 'show']);
 
+Route::get('/informasi-galeri', [InformasiGaleriController::class, 'index']);
+Route::get('/informasi-galeri/{id}', [InformasiGaleriController::class, 'show']);
+
+Route::get('/informasi-kontak', [InformasiKontakController::class, 'index']);
+
+Route::get('/informasi-lembaga', [InformasiLembagaController::class, 'index']);
+
+Route::get('/pelatihan', [PelatihanController::class, 'index']);
+Route::get('/pelatihan/{id}', [PelatihanController::class, 'show']);
+
+Route::get('/pendidikan', [PendidikanController::class, 'index']);
+Route::get('/pendidikan/{id}', [PendidikanController::class, 'show'])->where('id', '[0-9]+');
+
+Route::get('/profile-yayasan', [ProfileYayasanController::class, 'index']);
+
+Route::get('/profile-lkp', [ProfileLKPController::class, 'index']);
+
+Route::get('/profile-lpk', [ProfileLPKController::class, 'index']);
+
+
 
 Route::middleware(['jwt.auth'])->group(function () {
     Route::middleware(['peran:peserta'])->group(function () {
@@ -53,24 +73,18 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::get('/peserta/{id}', [PesertaController::class, 'show']);
         Route::put('/peserta/{id}', [PesertaController::class, 'update']);
         Route::post('/feedback/{id}', [FeedbackController::class, 'store']);
-        
+        Route::get('/notifikasi-saya', [NotifikasiController::class, 'indexForCurrentUser']);
+        Route::get('/notifikasi-saya/{id}', [NotifikasiController::class, 'showForCurrentUser']);
+        Route::put('/notifikasi-saya/{id}', [NotifikasiController::class, 'updateStatusForCurrentUser']);
+        Route::delete('/notifikasi-saya/{id}', [NotifikasiController::class, 'destroyForCurrentUser']);
+            
     });
 
 
     Route::middleware(['peran:admin'])->group(function(){
         Route::apiResources([
             'admin'            => AdminController::class,
-            'informasi-galeri' => InformasiGaleriController::class,
-            'informasi-kontak' => InformasiKontakController::class,
-            'informasi-lembaga'=> InformasiLembagaController::class,
             'ketua'            => KetuaController::class,
-            'laporan-admin'    => LaporanAdminController::class,
-            'notifikasi'       => NotifikasiController::class,
-            'pelatihan'        => PelatihanController::class,
-            'pendidikan'       => PendidikanController::class,
-            'profile-yayasan'  => ProfileYayasanController::class,
-            'profile-lkp'      => ProfileLKPController::class,
-            'profile-lpk'      => ProfileLPKController::class,
         ]);
         Route::get('/daftar-pelatihan', [DaftarPelatihanController::class, 'index']);
         Route::put('/daftar-pelatihan/{id}', [DaftarPelatihanController::class, 'update']);
@@ -91,7 +105,30 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('/mentor', [MentorController::class, 'store']);
         Route::put('/mentor/{id}', [MentorController::class, 'update']); 
         Route::delete('/mentor/{id}', [MentorController::class, 'destroy']);
+        Route::post('/informasi-galeri', [InformasiGaleriController::class, 'store']);
+        Route::put('/informasi-galeri/{id}', [InformasiGaleriController::class, 'update']);
+        Route::delete('/informasi-galeri/{id}', [InformasiGaleriController::class, 'destroy']);
+        Route::post('/informasi-kontak', [InformasiKontakController::class, 'store']);
+        Route::post('/informasi-lembaga', [InformasiLembagaController::class, 'store']);
+        Route::post('/my-laporan-admin', [LaporanAdminController::class, 'storeOrUpdateMyLaporan']);
+        Route::get('/my-laporan-admin', [LaporanAdminController::class, 'showMyLaporan']);
+        Route::post('/notifikasi', [NotifikasiController::class, 'storeForAdmin']);
+        Route::post('/pelatihan', [PelatihanController::class, 'store']);
+        Route::put('/pelatihan/{id}', [PelatihanController::class, 'update']);
+        Route::delete('/pelatihan/{id}', [PelatihanController::class, 'destroy']);
+        Route::post('/pendidikan', [PendidikanController::class, 'store']);
+        Route::put('/pendidikan/{id}', [PendidikanController::class, 'update']);
+        Route::delete('/pendidikan/{id}', [PendidikanController::class, 'destroy']);
+        Route::post('/profile-yayasan', [ProfileYayasanController::class, 'store']);
+        Route::post('/profile-lkp', [ProfileLKPController::class, 'store']);
+        Route::post('/profile-lpk', [ProfileLPKController::class, 'store']);
     });  
+
+    Route::middleware(['jwt.auth', 'peran:ketua'])->group(function () {
+        Route::get('/laporan-admin', [LaporanAdminController::class, 'index']);
+        Route::get('/laporan-admin/{id_laporan}', [LaporanAdminController::class, 'showLaporanByIdForKetua']);
+        Route::delete('/laporan-admin/{id_laporan}', [LaporanAdminController::class, 'destroy']);
+    });
 
 });
 

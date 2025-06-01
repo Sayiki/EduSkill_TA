@@ -3,67 +3,140 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\ProfileLPK;
+use App\Models\InformasiLembaga; // Import InformasiLembaga
+use Illuminate\Http\Request;
+use App\Http\Resources\ProfileLPKResource; // Import resource
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log; // Untuk debugging
 
 class ProfileLPKController extends Controller
 {
+    /**
+     * Menampilkan informasi profile LPK utama (publik).
+     * Kita asumsikan hanya ada satu entri LPK.
+     */
     public function index(Request $request)
     {
-        $perPage = $request->query('per_page', 10);
+        $profile = ProfileLPK::with('lembaga')->latest()->first(); 
 
-        $items = ProfileLPK::paginate($perPage);
-
-        return response()->json($items);
+        if (!$profile) {
+            return response()->json(['data' => null, 'message' => 'Profil LPK belum diatur.'], 200); 
+        }
+        return new ProfileLPKResource($profile);
     }
 
+    /**
+     * Menyimpan atau memperbarui informasi profile LPK (hanya Admin).
+     * Ini akan bertindak sebagai "upsert".
+     * id_lembaga akan diambil secara otomatis.
+     */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'id_lembaga'    => 'required|exists:informasi_lembaga,id',
+        $informasiLembaga = InformasiLembaga::first();
+
+        if (!$informasiLembaga) {
+            return response()->json(['message' => 'Informasi Lembaga Induk belum ada. Silakan buat terlebih dahulu.'], 400);
+        }
+
+        $validatedData = $request->validate([
             'nama_lpk'      => 'required|string|max:255',
             'deskripsi_lpk' => 'required|string',
-            'foto_lpk'      => 'nullable|string',
+            'foto_lpk'      => 'nullable|string|max:10000', 
         ]);
+        
+        $validatedData['id_lembaga'] = $informasiLembaga->id;
+        
+        $profile = ProfileLPK::first(); 
 
-        $item = ProfileLPK::create($data);
-
-        return response()->json([
-            'message' => 'Profile LPK berhasil dibuat',
-            'data'    => $item,
-        ], 201);
+        if ($profile) {
+            if ($request->filled('foto_lpk') && $profile->foto_lpk && 
+                (isset($validatedData['foto_lpk']) && $validatedData['foto_lpk'] !== $profile->foto_lpk) && 
+                !filter_var($profile->foto_lpk, FILTER_VALIDATE_URL)) {
+                if (Storage::disk('public')->exists($profile->foto_lpk)) {
+                    Storage::disk('public')->delete($profile->foto_lpk);
+                }
+            } elseif ($request->has('foto_lpk') && isset($validatedData['foto_lpk']) && is_null($validatedData['foto_lpk']) && $profile->foto_lpk && !filter_var($profile->foto_lpk, FILTER_VALIDATE_URL)) {
+                if (Storage::disk('public')->exists($profile->foto_lpk)) {
+                    Storage::disk('public')->delete($profile->foto_lpk);
+                }
+            }
+            $profile->update($validatedData);
+        } else {
+            $profile = ProfileLPK::create($validatedData);
+        }
+ 
+        return new ProfileLPKResource($profile->fresh()->load('lembaga'));
     }
 
+    /**
+     * Menampilkan detail profile LPK spesifik (publik).
+     * Umumnya tidak diperlukan jika hanya ada satu entri.
+     */
     public function show($id)
     {
-        $item = ProfileLPK::findOrFail($id);
-
-        return response()->json(['data' => $item]);
+        $profile = ProfileLPK::with('lembaga')->find($id);
+        if (!$profile) {
+            return response()->json(['message' => 'Profil LPK tidak ditemukan'], 404);
+        }
+        return new ProfileLPKResource($profile);
     }
 
+    /**
+     * Memperbarui informasi profile LPK yang ada (hanya Admin).
+     * Dengan "upsert" di store(), ini menjadi redundant.
+     */
     public function update(Request $request, $id)
     {
-        $item = ProfileLPK::findOrFail($id);
+        $profile = ProfileLPK::findOrFail($id); 
 
-        $data = $request->validate([
-            'id_lembaga'    => 'required|exists:informasi_lembaga,id',
-            'nama_lpk'      => 'required|string|max:255',
-            'deskripsi_lpk' => 'required|string',
-            'foto_lpk'      => 'nullable|string',
+        $informasiLembaga = InformasiLembaga::first();
+        if (!$informasiLembaga) {
+            return response()->json(['message' => 'Informasi Lembaga Induk belum ada.'], 400);
+        }
+
+        $validatedData = $request->validate([
+            'nama_lpk'      => 'sometimes|required|string|max:255',
+            'deskripsi_lpk' => 'sometimes|required|string',
+            'foto_lpk'      => 'sometimes|nullable|string|max:10000',
         ]);
 
-        $item->update($data);
+        $validatedData['id_lembaga'] = $informasiLembaga->id;
 
-        return response()->json([
-            'message' => 'Profile LPK berhasil diperbarui',
-            'data'    => $item,
-        ]);
+        if ($request->filled('foto_lpk') && isset($validatedData['foto_lpk']) && $validatedData['foto_lpk'] !== $profile->foto_lpk) {
+            if ($profile->foto_lpk && !filter_var($profile->foto_lpk, FILTER_VALIDATE_URL)) {
+                if (Storage::disk('public')->exists($profile->foto_lpk)) {
+                     Storage::disk('public')->delete($profile->foto_lpk);
+                }
+            }
+        }  elseif ($request->has('foto_lpk') && isset($validatedData['foto_lpk']) && is_null($validatedData['foto_lpk'])) {
+            if ($profile->foto_lpk && !filter_var($profile->foto_lpk, FILTER_VALIDATE_URL)) {
+                 if (Storage::disk('public')->exists($profile->foto_lpk)) {
+                    Storage::disk('public')->delete($profile->foto_lpk);
+                }
+            }
+        }
+        
+        $profile->update($validatedData);
+        return new ProfileLPKResource($profile->fresh()->load('lembaga'));
     }
 
+    /**
+     * Menghapus informasi profile LPK (hanya Admin).
+     * Sebaiknya TIDAK ADA jika informasi ini harus selalu ada.
+     */
     public function destroy($id)
     {
-        ProfileLPK::findOrFail($id)->delete();
+        $profile = ProfileLPK::findOrFail($id);
+        
+        if ($profile->foto_lpk && !filter_var($profile->foto_lpk, FILTER_VALIDATE_URL)) {
+            if (Storage::disk('public')->exists($profile->foto_lpk)) {
+                Storage::disk('public')->delete($profile->foto_lpk);
+            }
+        }
+        
+        $profile->delete();
 
-        return response()->json(['message' => 'Profile LPK berhasil dihapus']);
+        return response()->json(['message' => 'Profil LPK berhasil dihapus'], 200);
     }
 }

@@ -3,88 +3,113 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\InformasiKontak;
+use App\Models\Admin; // Pastikan di-import
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule; // Untuk validasi
+use App\Http\Resources\InformasiKontakResource; // Import resource
 
 class InformasiKontakController extends Controller
 {
+    /**
+     * Menampilkan daftar informasi kontak (publik).
+     * Biasanya hanya akan ada satu atau beberapa entri kontak utama.
+     */
     public function index(Request $request)
     {
-        $perPage = $request->query('per_page', 10);
+        // Jika Anda hanya punya satu set informasi kontak, gunakan first()
+        // $kontak = InformasiKontak::latest()->first(); // Mengambil yang terbaru
+        // return $kontak ? new InformasiKontakResource($kontak) : response()->json(['data' => null]);
 
-        $contacts = InformasiKontak::paginate($perPage);
-
-        return response()->json($contacts);
+        // Jika bisa ada beberapa, gunakan paginasi atau get()
+        $kontak = InformasiKontak::latest()->get(); // Mengambil semua, diurutkan terbaru
+        return InformasiKontakResource::collection($kontak);
     }
 
     /**
-     * POST /api/informasi-kontak
+     * Menyimpan informasi kontak baru (hanya Admin).
      */
     public function store(Request $request)
     {
-        $payload = $request->validate([
+        $validatedData = $request->validate([
             'alamat'  => 'required|string|max:1000',
             'email'   => 'required|email|max:255',
             'telepon' => 'required|string|max:50',
         ]);
 
-        // tambahkan admin_id dari user yang sedang login
-        $payload['admin_id'] = $request->user()->id;
+        $loggedInUser = $request->user();
+        if (!$loggedInUser || !$loggedInUser->adminProfile) {
+             return response()->json(['message' => 'Akses ditolak atau profil admin tidak ditemukan.'], 403);
+        }
+        $admin = $loggedInUser->adminProfile;
+        
+        // Coba cari apakah sudah ada entri kontak
+        $kontak = InformasiKontak::first();
 
-        $kontak = InformasiKontak::create($payload);
+        if ($kontak) {
+            // Jika sudah ada, UPDATE entri yang ada
+            $kontak->update($validatedData);
+            // Anda mungkin ingin mencatat admin_id yang melakukan update jika berbeda
+            // $kontak->admin_id = $admin->id; // Jika ingin melacak editor terakhir
+            // $kontak->save();
+        } else {
+            // Jika belum ada, CREATE entri baru
+            $validatedData['admin_id'] = $admin->id;
+            $kontak = InformasiKontak::create($validatedData);
+        }
 
-        return response()->json([
-            'message' => 'Kontak berhasil dibuat',
-            'data'    => $kontak,
-        ], 201);
+        return new InformasiKontakResource($kontak->fresh()); // Gunakan fresh() untuk data terbaru
     }
 
     /**
-     * GET /api/informasi-kontak/{id}
+     * Menampilkan detail informasi kontak spesifik (publik).
+     * Endpoint ini mungkin tidak terlalu berguna jika Anda hanya punya satu set info kontak.
+     * Lebih umum mengambil semua via index() dan frontend memilih yang ditampilkan.
      */
     public function show($id)
     {
-        $kontak = InformasiKontak::findOrFail($id);
-
-        return response()->json([
-            'data' => $kontak
-        ]);
+        $kontak = InformasiKontak::find($id);
+        if (!$kontak) {
+            return response()->json(['message' => 'Informasi kontak tidak ditemukan'], 404);
+        }
+        return new InformasiKontakResource($kontak);
     }
 
     /**
-     * PUT /api/informasi-kontak/{id}
+     * Memperbarui informasi kontak yang ada (hanya Admin).
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id) // $id di sini mungkin tidak relevan jika hanya ada 1 record
     {
-        $kontak = InformasiKontak::findOrFail($id);
+        // Ambil satu-satunya record kontak, atau record dengan ID spesifik jika Anda mengizinkan >1
+        $kontak = InformasiKontak::firstOrFail(); // Mengambil yang pertama, atau gagal jika tidak ada
+        // Atau jika Anda tetap menggunakan $id:
+        // $kontak = InformasiKontak::findOrFail($id);
 
-        $payload = $request->validate([
-            'alamat'  => 'required|string|max:1000',
-            'email'   => 'required|email|max:255',
-            'telepon' => 'required|string|max:50',
+
+        $validatedData = $request->validate([
+            'alamat'  => 'sometimes|required|string|max:1000',
+            'email'   => ['sometimes', 'required', 'email', 'max:255', Rule::unique('informasi_kontak')->ignore($kontak->id)],
+            'telepon' => 'sometimes|required|string|max:50',
         ]);
 
-        // jika ingin merekam siapa admin yang update
-        $payload['admin_id'] = $request->user()->id;
+        $kontak->update($validatedData);
 
-        $kontak->update($payload);
-
-        return response()->json([
-            'message' => 'Kontak berhasil diperbarui',
-            'data'    => $kontak,
-        ]);
+        return new InformasiKontakResource($kontak->fresh());
     }
 
     /**
-     * DELETE /api/informasi-kontak/{id}
+     * Menghapus informasi kontak (hanya Admin).
+     * Hati-hati menggunakan ini jika Anda hanya ingin ada satu set info kontak.
+     * Mungkin lebih baik hanya ada fitur update.
      */
     public function destroy($id)
     {
         $kontak = InformasiKontak::findOrFail($id);
+        
+        // Otorisasi tambahan jika perlu (misalnya, hanya super admin)
+        
         $kontak->delete();
 
-        return response()->json([
-            'message' => 'Kontak berhasil dihapus'
-        ]);
+        return response()->json(['message' => 'Informasi kontak berhasil dihapus'], 200);
     }
 }

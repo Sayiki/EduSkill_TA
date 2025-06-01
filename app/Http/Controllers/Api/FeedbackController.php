@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Feedback;
 use App\Models\Peserta;
 use App\Models\User;
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rule; 
 use Illuminate\Support\Facades\Auth;
 
 class FeedbackController extends Controller
@@ -16,7 +16,9 @@ class FeedbackController extends Controller
     {
         $perPage = $request->query('per_page', 10);
 
-        $fb = Feedback::with('peserta')
+        $fb = Feedback::with(['peserta' => function ($query) {
+                        $query->with('user');
+                    }])
                     ->paginate($perPage);
 
         return response()->json($fb);
@@ -26,22 +28,18 @@ class FeedbackController extends Controller
     {
         $user = Auth::user(); 
 
-
         $peserta = $user->peserta; 
 
         if (!$peserta) {
             return response()->json(['message' => 'Profil peserta tidak ditemukan untuk pengguna yang sedang login.'], 404);
         }
 
-
         $validatedData = $request->validate([
             'comment'      => 'required|string|max:1000', 
-            'status_kerja' => ['nullable', 'string', 'max:20', Rule::in(['bekerja', 'belum_bekerja', 'kuliah', 'wirausaha', 'tidak_diketahui'])],
+            'status_kerja' => ['nullable', 'string', 'max:255'],
         ]);
         
-
         $validatedData['id_peserta'] = $peserta->id;
-
 
         $feedback = Feedback::create($validatedData);
 
@@ -58,7 +56,9 @@ class FeedbackController extends Controller
      */
     public function show($id)
     {
-        $fb = Feedback::with('peserta')->findOrFail($id);
+        $fb = Feedback::with(['peserta' => function ($query) {
+                        $query->with('user'); // Memuat relasi 'user' dari 'peserta'
+                    }])->findOrFail($id);
         return response()->json($fb, 200);
     }
 
@@ -69,12 +69,9 @@ class FeedbackController extends Controller
     {
         $fb = Feedback::findOrFail($id);
 
-        // Otorisasi: Hanya admin yang boleh update, atau peserta pemilik feedback (jika diizinkan)
-        // $this->authorize('update', $fb);
-
         $data = $request->validate([
             'comment'      => 'sometimes|required|string|max:1000',
-            'status_kerja' => ['sometimes', 'nullable', 'string', 'max:20', Rule::in(['bekerja', 'belum_bekerja', 'kuliah', 'wirausaha', 'tidak_diketahui'])],
+            'status_kerja' => ['sometimes', 'nullable', 'string', 'max:255'],
         ]);
 
         $fb->update($data);
@@ -93,9 +90,6 @@ class FeedbackController extends Controller
     public function destroy($id)
     {
         $fb = Feedback::findOrFail($id);
-
-        // Otorisasi: Hanya admin yang boleh delete
-        // $this->authorize('delete', $fb);
 
         $fb->delete(); 
 

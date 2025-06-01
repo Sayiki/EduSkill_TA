@@ -3,96 +3,109 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Pelatihan;
+use App\Models\Admin; // Pastikan model Admin di-import
+use Illuminate\Http\Request;
+use App\Http\Resources\PelatihanResource; // Import resource
+use Illuminate\Validation\Rule;
 
 class PelatihanController extends Controller
 {
+    /**
+     * Menampilkan daftar semua pelatihan (publik).
+     * GET /api/pelatihan
+     */
     public function index(Request $request)
     {
         $perPage = $request->query('per_page', 10);
+        // Eager load relasi mentor dan admin (jika admin ingin ditampilkan)
+        $pelatihan = Pelatihan::with(['mentor', 'admin.user']) 
+                               ->latest()
+                               ->paginate($perPage);
 
-        $pel = Pelatihan::paginate($perPage);
-
-        return response()->json($pel);
+        return PelatihanResource::collection($pelatihan);
     }
 
     /**
+     * Menyimpan pelatihan baru (hanya Admin).
      * POST /api/pelatihan
-     * Buat pelatihan baru
      */
     public function store(Request $request)
     {
-        $payload = $request->validate([
-            'nama_pelatihan'       => 'required|string|max:255',
-            'keterangan_pelatihan' => 'nullable|string',
+        $validatedData = $request->validate([
+            'nama_pelatihan'       => 'required|string|max:100',
+            'keterangan_pelatihan' => 'required|string|max:350',
             'jumlah_kuota'         => 'required|integer|min:1',
-            'jumlah_peserta'       => 'nullable|integer|min:0',
-            'waktu_pengumpulan'    => 'nullable|date',
+            // 'jumlah_peserta' diisi 0 saat awal, akan diupdate saat peserta diterima
+            'waktu_pengumpulan'    => 'required|date_format:Y-m-d H:i:s', // Misal: 2025-12-31 23:59:00
+            'mentor_id'            => 'nullable|integer|exists:mentor,id',
         ]);
 
-        // tambahkan admin_id dari user yang sedang login
-        $payload['admin_id'] = $request->user()->id;
+        $loggedInUser = $request->user();
+        if (!$loggedInUser || !$loggedInUser->adminProfile) {
+             return response()->json(['message' => 'Profil admin tidak ditemukan untuk pengguna ini.'], 403);
+        }
+        $admin = $loggedInUser->adminProfile;
+        $validatedData['admin_id'] = $admin->id;
+        $validatedData['jumlah_peserta'] = 0; // Default jumlah peserta awal
 
-        $pel = Pelatihan::create($payload);
+        $pelatihan = Pelatihan::create($validatedData);
 
-        return response()->json([
-            'message' => 'Pelatihan berhasil dibuat.',
-            'data'    => $pel,
-        ], 201);
+        return new PelatihanResource($pelatihan->load(['mentor', 'admin.user']));
     }
 
     /**
+     * Menampilkan detail pelatihan spesifik (publik).
      * GET /api/pelatihan/{id}
-     * Tampilkan pelatihan berdasarkan ID
      */
     public function show($id)
     {
-        $pel = Pelatihan::findOrFail($id);
-
-        return response()->json([
-            'data' => $pel
-        ]);
+        $pelatihan = Pelatihan::with(['mentor', 'admin.user'])->find($id);
+        if (!$pelatihan) {
+            return response()->json(['message' => 'Pelatihan tidak ditemukan'], 404);
+        }
+        return new PelatihanResource($pelatihan);
     }
 
     /**
+     * Memperbarui pelatihan yang ada (hanya Admin).
      * PUT /api/pelatihan/{id}
-     * Update pelatihan berdasarkan ID
      */
     public function update(Request $request, $id)
     {
-        $pel = Pelatihan::findOrFail($id);
+        $pelatihan = Pelatihan::findOrFail($id);
 
-        $payload = $request->validate([
-            'nama_pelatihan'       => 'sometimes|required|string|max:255',
-            'keterangan_pelatihan' => 'sometimes|nullable|string',
+        $validatedData = $request->validate([
+            'nama_pelatihan'       => 'sometimes|required|string|max:100',
+            'keterangan_pelatihan' => 'sometimes|required|string|max:350',
             'jumlah_kuota'         => 'sometimes|required|integer|min:1',
-            'jumlah_peserta'       => 'sometimes|nullable|integer|min:0',
-            'waktu_pengumpulan'    => 'sometimes|nullable|date',
+            // 'jumlah_peserta' sebaiknya tidak diupdate manual di sini, tapi oleh sistem
+            'waktu_pengumpulan'    => 'sometimes|required|date_format:Y-m-d H:i:s',
+            'mentor_id'            => 'sometimes|nullable|integer|exists:mentor,id',
         ]);
 
-        // jika ingin merekam siapa admin yang update
-        $payload['admin_id'] = $request->user()->id;
+        // admin_id (pembuat asli) tidak diubah saat update.
+        // jumlah_peserta diupdate oleh sistem saat pendaftaran diterima/dibatalkan.
 
-        $pel->update($payload);
+        $pelatihan->update($validatedData);
 
-        return response()->json([
-            'message' => 'Pelatihan berhasil diperbarui.',
-            'data'    => $pel,
-        ]);
+        return new PelatihanResource($pelatihan->fresh()->load(['mentor', 'admin.user']));
     }
 
     /**
+     * Menghapus pelatihan (hanya Admin).
      * DELETE /api/pelatihan/{id}
-     * Hapus (atau non-aktifkan) pelatihan berdasarkan ID
      */
     public function destroy($id)
     {
-        $pel = Pelatihan::findOrFail($id);
-        $pel->delete();
+        $pelatihan = Pelatihan::findOrFail($id);
+        
+        // Pertimbangkan apa yang terjadi dengan pendaftaran terkait jika pelatihan dihapus.
+        // onDelete('cascade') pada tabel daftar_pelatihan.id_pelatihan akan menghapus semua pendaftaran.
+        // Jika ada peserta yang sudah diterima, mungkin perlu logika tambahan.
+        
+        $pelatihan->delete();
 
-        return response()->json([
-            'message' => 'Pelatihan berhasil dihapus.',
-        ]);
+        return response()->json(['message' => 'Pelatihan berhasil dihapus'], 200);
     }
 }

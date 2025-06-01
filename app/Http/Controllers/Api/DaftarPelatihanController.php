@@ -7,6 +7,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\DaftarPelatihan;
 use App\Models\Peserta;
+use App\Models\Notifikasi; 
+use App\Models\Pelatihan; 
+use Illuminate\Validation\Rule; 
 
 class DaftarPelatihanController extends Controller
 {
@@ -14,8 +17,10 @@ class DaftarPelatihanController extends Controller
     {
         $perPage = $request->query('per_page', 10);
 
-        $entries = DaftarPelatihan::with(['peserta','pelatihan'])
-                      ->paginate($perPage);
+        // Eager load relasi yang mungkin dibutuhkan di frontend
+        $entries = DaftarPelatihan::with(['peserta.user', 'pelatihan'])
+                                  ->latest() // Urutkan berdasarkan yang terbaru
+                                  ->paginate($perPage);
 
         return response()->json($entries);
     }
@@ -24,20 +29,20 @@ class DaftarPelatihanController extends Controller
     {
         Log::info('Registration attempt by User ID: ' . $request->user()->id);
 
-        // 1. VALIDATE INCOMING DATA
         $data = $request->validate([
             'id_pelatihan' => 'required|integer|exists:pelatihan,id',
             'nik'          => ['required', 'string', 'digits:16'],
-            'kk'           => 'nullable|string|max:255',
-            'ktp'          => 'nullable|string|max:255',
-            'ijazah'       => 'nullable|string|max:255',
-            'foto'         => 'nullable|string|max:255',
+            'kk'           => 'nullable|string|max:255', // Asumsi ini path file atau teks
+            'ktp'          => 'nullable|string|max:255', // Asumsi ini path file atau teks
+            'ijazah'       => 'nullable|string|max:255', // Asumsi ini path file atau teks
+            'foto'         => 'nullable|string|max:255', // Asumsi ini path file atau teks
         ]);
 
-        // 2. FIND OR CREATE THE PESERTA RECORD
-        $peserta = Peserta::firstOrCreate(['user_id' => $request->user()->id]);
+        $peserta = Peserta::firstOrCreate(
+            ['user_id' => $request->user()->id]
+            // Anda bisa menambahkan data default lain untuk peserta di sini jika perlu
+        );
 
-        // 3. HANDLE THE NIK
         if (empty($peserta->nik_peserta)) {
             $isNikTaken = Peserta::where('nik_peserta', $data['nik'])->where('id', '!=', $peserta->id)->exists();
             if ($isNikTaken) {
@@ -52,11 +57,9 @@ class DaftarPelatihanController extends Controller
             ], 422);
         }
         
-        // 4. PREVENT MULTIPLE ACTIVE REGISTRATIONS
-        // UPDATED: Check for 'ditinjau' instead of 'menunggu'
         $hasActiveRegistration = DaftarPelatihan::where('id_peserta', $peserta->id)
-                                                ->whereIn('status', ['ditinjau', 'diterima'])
-                                                ->exists();
+                                              ->whereIn('status', ['ditinjau', 'diterima'])
+                                              ->exists();
 
         if ($hasActiveRegistration) {
             return response()->json([
@@ -64,95 +67,110 @@ class DaftarPelatihanController extends Controller
             ], 409); 
         }
 
-        // ... (Your other checks can go here if needed)
-
-        // 5. CREATE THE REGISTRATION ENTRY
-        $entry = DaftarPelatihan::create([
+        $entryData = [
             'id_peserta'   => $peserta->id,
             'id_pelatihan' => $data['id_pelatihan'],
             'kk'           => $data['kk'] ?? null,
             'ktp'          => $data['ktp'] ?? null,
             'ijazah'       => $data['ijazah'] ?? null,
             'foto'         => $data['foto'] ?? null,
-            'status'       => 'ditinjau', // CHANGED AS REQUESTED
-        ]);
+            'status'       => 'ditinjau',
+        ];
+        
+        $entry = DaftarPelatihan::create($entryData);
 
-        // 6. RETURN A SUCCESSFUL RESPONSE
-        return response()->json($entry->load(['peserta', 'pelatihan']), 201);
+        return response()->json($entry->load(['peserta.user', 'pelatihan']), 201);
     }
 
-
-    /**
-     * GET /api/daftar-pelatihan/{id}
-     */
     public function show($id)
     {
-        $entry = DaftarPelatihan::with(['peserta', 'pelatihan'])->findOrFail($id);
+        $entry = DaftarPelatihan::with(['peserta.user', 'pelatihan'])->findOrFail($id);
         return response()->json($entry, 200);
     }
 
-    /**
-     * PUT /api/daftar-pelatihan/{id}
-     */
     public function update(Request $request, $id)
     {
-        // 1. Temukan entri pendaftaran atau gagal jika tidak ada.
-        $entry = DaftarPelatihan::with('pelatihan')->findOrFail($id);
+        // 1. Temukan entri pendaftaran, pastikan memuat relasi yang dibutuhkan untuk notifikasi
+        $entry = DaftarPelatihan::with(['pelatihan', 'peserta'])->findOrFail($id); // Tambahkan 'peserta'
 
         // 2. Validasi input yang masuk. Fokus utama pada perubahan status.
-        $data = $request->validate([
-            'status' => ['required', 'in:ditinjau,diterima,ditolak'],
-            // Kita bisa juga memvalidasi field dokumen jika diperlukan,
-            // tapi untuk sekarang kita fokus pada status.
+        $validatedData = $request->validate([
+            'status' => ['required', Rule::in(['ditinjau', 'diterima', 'ditolak'])],
         ]);
 
-        $newStatus = $data['status'];
+        $newStatus = $validatedData['status'];
         $originalStatus = $entry->status;
 
         // Jangan lakukan apa-apa jika status tidak berubah.
         if ($newStatus === $originalStatus) {
-            return response()->json($entry->load('peserta'), 200);
+            return response()->json($entry->load(['peserta.user', 'pelatihan']), 200);
         }
+
+        $pelatihan = $entry->pelatihan; // Ambil objek pelatihan dari relasi
 
         // 3. LOGIKA BISNIS: Periksa kuota SEBELUM menerima peserta baru.
         if ($newStatus === 'diterima') {
-            $pelatihan = $entry->pelatihan;
             if ($pelatihan->jumlah_peserta >= $pelatihan->jumlah_kuota) {
-                // Jika kuota sudah penuh, kembalikan error.
                 return response()->json([
                     'message' => 'Gagal menerima peserta. Kuota untuk pelatihan ini sudah penuh.',
                     'kuota' => $pelatihan->jumlah_kuota,
                     'peserta_saat_ini' => $pelatihan->jumlah_peserta,
-                ], 409); // 409 Conflict
+                ], 409);
             }
         }
 
         // 4. Lakukan update pada entri pendaftaran.
-        $entry->update($data);
+        // Hanya update status karena itu yang divalidasi dari request.
+        $entry->status = $newStatus;
+        $entry->save();
 
-        // 5. LOGIKA BISNIS: Update jumlah peserta pada pelatihan terkait.
-        // Jika status baru adalah 'diterima' (dan status lama bukan 'diterima').
+        // 5. LOGIKA BISNIS: Update jumlah peserta pada pelatihan terkait DAN KIRIM NOTIFIKASI.
+        $notificationMessage = '';
+
         if ($newStatus === 'diterima' && $originalStatus !== 'diterima') {
-            $entry->pelatihan->increment('jumlah_peserta');
+            $pelatihan->increment('jumlah_peserta');
+            $notificationMessage = 'Selamat! Pendaftaran Anda untuk pelatihan "' . $pelatihan->nama_pelatihan . '" telah diterima.';
         } 
-        // Jika status lama adalah 'diterima' dan diubah ke status lain (ditolak/ditinjau).
-        elseif ($originalStatus === 'diterima' && $newStatus !== 'diterima') {
-            $entry->pelatihan->decrement('jumlah_peserta');
+        elseif ($newStatus === 'ditolak' && $originalStatus !== 'ditolak') {
+            // Hanya decrement jika status sebelumnya adalah 'diterima'
+            if ($originalStatus === 'diterima') {
+                $pelatihan->decrement('jumlah_peserta');
+            }
+            $notificationMessage = 'Mohon maaf, pendaftaran Anda untuk pelatihan "' . $pelatihan->nama_pelatihan . '" telah ditolak. Silakan hubungi admin untuk informasi lebih lanjut atau periksa detail di profil Anda.';
+        }
+        elseif ($originalStatus === 'diterima' && ($newStatus === 'ditinjau' || $newStatus === 'ditolak')) {
+            // Jika status diubah dari 'diterima' ke status lain (misalnya, pembatalan penerimaan)
+            $pelatihan->decrement('jumlah_peserta');
+            if ($newStatus === 'ditinjau') {
+                 $notificationMessage = 'Status pendaftaran Anda untuk pelatihan "' . $pelatihan->nama_pelatihan . '" diubah menjadi sedang ditinjau kembali.';
+            }
+            // Notifikasi untuk 'ditolak' dari 'diterima' sudah ditangani di blok elseif sebelumnya.
+        }
+
+        // Buat notifikasi jika ada pesan yang dihasilkan
+        if (!empty($notificationMessage) && $entry->id_peserta) {
+            Notifikasi::create([
+                'id_peserta' => $entry->id_peserta,
+                'pesan' => $notificationMessage,
+                'status' => 'belum dibaca', // Status notifikasi default
+            ]);
         }
 
         // 6. Kembalikan respons dengan data yang sudah diperbarui.
-        // Muat ulang relasi untuk memastikan data yang dikirim adalah yang terbaru.
-        return response()->json($entry->fresh()->load(['peserta', 'pelatihan']), 200);
+        return response()->json($entry->fresh()->load(['peserta.user', 'pelatihan']), 200);
     }
 
-    /**
-     * DELETE /api/daftar-pelatihan/{id}
-     */
     public function destroy($id)
     {
-        $entry = DaftarPelatihan::findOrFail($id);
+        $entry = DaftarPelatihan::with('pelatihan')->findOrFail($id);
+
+        // Jika pendaftaran yang dihapus statusnya 'diterima', kurangi jumlah peserta
+        if ($entry->status === 'diterima' && $entry->pelatihan) {
+            $entry->pelatihan->decrement('jumlah_peserta');
+        }
+        
         $entry->delete(); 
 
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Pendaftaran berhasil dihapus.'], 200); // Mengembalikan pesan sukses
     }
 }

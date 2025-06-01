@@ -3,81 +3,118 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Notifikasi;
+use App\Models\Peserta; // Untuk mengambil profil peserta dari user
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\NotifikasiResource;
+use Illuminate\Validation\Rule;
 
 class NotifikasiController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Menampilkan notifikasi untuk peserta yang sedang login.
+     * GET /api/notifikasi-saya
+     */
+    public function indexForCurrentUser(Request $request)
     {
+        $user = Auth::user();
+        if (!$user || !$user->peserta) { // Asumsi relasi 'peserta' ada di model User
+            return response()->json(['message' => 'Profil peserta tidak ditemukan untuk pengguna ini.'], 404);
+        }
+        $pesertaId = $user->peserta->id;
+
         $perPage = $request->query('per_page', 10);
+        $notifikasi = Notifikasi::where('id_peserta', $pesertaId)
+                                ->latest() // Tampilkan yang terbaru dulu
+                                ->paginate($perPage);
 
-        $ntf = Notifikasi::paginate($perPage);
-
-        return response()->json($ntf);
+        return NotifikasiResource::collection($notifikasi);
     }
-    
+
     /**
+     * (Untuk Admin) Membuat notifikasi baru untuk peserta tertentu.
      * POST /api/notifikasi
-     * Buat notifikasi baru
+     * Endpoint ini akan dilindungi oleh middleware peran admin.
      */
-    public function store(Request $request)
+    public function storeForAdmin(Request $request)
     {
-        $payload = $request->validate([
-            'pesan'  => 'required|string',
-            'status' => 'required|string|in:unread,read',
+        $validatedData = $request->validate([
+            'id_peserta' => 'required|integer|exists:peserta,id',
+            'pesan'      => 'required|string|max:1000',
+            // Status defaultnya 'belum dibaca' saat dibuat
         ]);
 
-        $ntf = Notifikasi::create($payload);
+        $validatedData['status'] = 'belum dibaca'; // Default status
 
-        return response()->json([
-            'message' => 'Notifikasi berhasil dibuat.',
-            'data'    => $ntf,
-        ], 201);
+        $notifikasi = Notifikasi::create($validatedData);
+
+        return new NotifikasiResource($notifikasi);
     }
 
     /**
-     * GET /api/notifikasi/{id}
-     * Tampilkan notifikasi berdasarkan ID
+     * Menampilkan detail notifikasi spesifik milik peserta yang login.
+     * GET /api/notifikasi-saya/{id_notifikasi}
      */
-    public function show($id)
+    public function showForCurrentUser(Request $request, $id_notifikasi)
     {
-        $ntf = Notifikasi::findOrFail($id);
-        return response()->json(['data' => $ntf]);
+        $user = Auth::user();
+        if (!$user || !$user->peserta) {
+            return response()->json(['message' => 'Profil peserta tidak ditemukan.'], 404);
+        }
+        $pesertaId = $user->peserta->id;
+
+        $notifikasi = Notifikasi::where('id', $id_notifikasi)
+                                ->where('id_peserta', $pesertaId)
+                                ->firstOrFail();
+
+        return new NotifikasiResource($notifikasi);
     }
 
     /**
-     * PUT /api/notifikasi/{id}
-     * Perbarui notifikasi berdasarkan ID
+     * (Untuk Peserta) Memperbarui status notifikasi (misalnya, menjadi 'dibaca').
+     * PUT /api/notifikasi-saya/{id_notifikasi}
      */
-    public function update(Request $request, $id)
+    public function updateStatusForCurrentUser(Request $request, $id_notifikasi)
     {
-        $ntf = Notifikasi::findOrFail($id);
+        $user = Auth::user();
+        if (!$user || !$user->peserta) {
+            return response()->json(['message' => 'Profil peserta tidak ditemukan.'], 404);
+        }
+        $pesertaId = $user->peserta->id;
 
-        $payload = $request->validate([
-            'pesan'  => 'sometimes|required|string',
-            'status' => 'sometimes|required|string|in:unread,read',
+        $notifikasi = Notifikasi::where('id', $id_notifikasi)
+                                ->where('id_peserta', $pesertaId)
+                                ->firstOrFail();
+
+        $validatedData = $request->validate([
+            'status' => ['required', Rule::in(['dibaca', 'belum dibaca'])],
         ]);
 
-        $ntf->update($payload);
+        $notifikasi->update($validatedData);
 
-        return response()->json([
-            'message' => 'Notifikasi berhasil diperbarui.',
-            'data'    => $ntf,
-        ]);
+        return new NotifikasiResource($notifikasi);
     }
 
     /**
-     * DELETE /api/notifikasi/{id}
-     * Hapus (atau non-aktifkan) notifikasi berdasarkan ID
+     * (Untuk Peserta) Menghapus notifikasi miliknya.
+     * DELETE /api/notifikasi-saya/{id_notifikasi}
      */
-    public function destroy($id)
+    public function destroyForCurrentUser(Request $request, $id_notifikasi)
     {
-        $ntf = Notifikasi::findOrFail($id);
-        $ntf->delete();
+        $user = Auth::user();
+        if (!$user || !$user->peserta) {
+            return response()->json(['message' => 'Profil peserta tidak ditemukan.'], 404);
+        }
+        $pesertaId = $user->peserta->id;
 
-        return response()->json([
-            'message' => 'Notifikasi berhasil dihapus.',
-        ]);
+        $notifikasi = Notifikasi::where('id', $id_notifikasi)
+                                ->where('id_peserta', $pesertaId)
+                                ->firstOrFail();
+        
+        $notifikasi->delete();
+
+        return response()->json(['message' => 'Notifikasi berhasil dihapus.'], 200);
     }
+
 }

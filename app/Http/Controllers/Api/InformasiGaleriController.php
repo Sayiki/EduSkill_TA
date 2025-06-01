@@ -3,86 +3,122 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\InformasiGaleri;
+use App\Models\Admin; // Pastikan di-import
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage; // Penting untuk manajemen file
+use App\Http\Resources\InformasiGaleriResource; // Import resource
 
 class InformasiGaleriController extends Controller
 {
+    /**
+     * Menampilkan daftar semua item galeri (publik).
+     */
     public function index(Request $request)
     {
-        $perPage = $request->query('per_page', 10);
+        $perPage = $request->query('per_page', 12);
+        $items = InformasiGaleri::with('admin.user')
+                               ->latest()
+                               ->paginate($perPage);
 
-        $items = InformasiGaleri::paginate($perPage);
-
-        return response()->json($items);
+        return InformasiGaleriResource::collection($items);
     }
 
     /**
-     * POST /api/informasi-galeri
+     * Menyimpan item galeri baru (hanya Admin).
      */
     public function store(Request $request)
     {
-        $payload = $request->validate([
+        $validatedData = $request->validate([
             'nama_kegiatan' => 'required|string|max:255',
-            'foto_galeri'   => 'nullable|url',
+            'foto_galeri'   => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10000', 
         ]);
 
-        // tambahkan admin_id dari user yang sedang login
-        $payload['admin_id'] = $request->user()->id;
+        $loggedInUser = $request->user();
+        if (!$loggedInUser || !$loggedInUser->adminProfile) {
+             return response()->json(['message' => 'Akses ditolak atau profil admin tidak ditemukan.'], 403);
+        }
+        $admin = $loggedInUser->adminProfile;
+        $validatedData['admin_id'] = $admin->id;
 
-        $item = InformasiGaleri::create($payload);
+        // TAMBAHKAN LOGIKA PENYIMPANAN FILE
+        if ($request->hasFile('foto_galeri')) {
+            $validatedData['foto_galeri'] = $request->file('foto_galeri')->store('galeri_kegiatan', 'public');
+        }
 
-        return response()->json([
-            'message' => 'Item galeri berhasil dibuat',
-            'data'    => $item
-        ], 201);
+        $item = InformasiGaleri::create($validatedData);
+
+        return new InformasiGaleriResource($item->load('admin.user'));
     }
 
     /**
-     * GET /api/informasi-galeri/{id}
+     * Menampilkan detail item galeri spesifik (publik).
      */
     public function show($id)
     {
-        $item = InformasiGaleri::findOrFail($id);
-
-        return response()->json([
-            'data' => $item
-        ]);
+        $item = InformasiGaleri::with('admin.user')->find($id);
+        if (!$item) {
+            return response()->json(['message' => 'Item galeri tidak ditemukan'], 404);
+        }
+        return new InformasiGaleriResource($item);
     }
 
     /**
-     * PUT /api/informasi-galeri/{id}
+     * Memperbarui item galeri yang ada (hanya Admin).
      */
     public function update(Request $request, $id)
     {
         $item = InformasiGaleri::findOrFail($id);
 
-        $payload = $request->validate([
-            'nama_kegiatan' => ['required','string','max:255'],
-            'foto_galeri'   => ['nullable','url'],
+        $validatedData = $request->validate([
+            'nama_kegiatan' => 'sometimes|required|string|max:255',
+            // UBAH VALIDASI: dari 'url' menjadi 'image' jika admin bisa ganti file
+            'foto_galeri'   => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10000',
         ]);
 
-        // jika ingin merekam siapa admin yang update
-        $payload['admin_id'] = $request->user()->id;
+        // TAMBAHKAN LOGIKA UPDATE FILE
+        if ($request->hasFile('foto_galeri')) {
+            // Hapus foto lama jika ada
+            if ($item->foto_galeri && Storage::disk('public')->exists($item->foto_galeri)) {
+                Storage::disk('public')->delete($item->foto_galeri);
+            }
+            // Simpan foto baru
+            $validatedData['foto_galeri'] = $request->file('foto_galeri')->store('galeri_kegiatan', 'public');
+        } elseif ($request->input('remove_foto_galeri') == true && $item->foto_galeri) {
+            // Jika ada flag untuk menghapus foto dan foto ada
+             if (Storage::disk('public')->exists($item->foto_galeri)) {
+                Storage::disk('public')->delete($item->foto_galeri);
+            }
+            $validatedData['foto_galeri'] = null; // Set path di DB menjadi null
+        }
 
-        $item->update($payload);
+        $item->update($validatedData);
 
-        return response()->json([
-            'message' => 'Item galeri berhasil diperbarui',
-            'data'    => $item
-        ]);
+        return new InformasiGaleriResource($item->fresh()->load('admin.user'));
     }
 
     /**
-     * DELETE /api/informasi-galeri/{id}
+     * Menghapus item galeri (hanya Admin).
      */
     public function destroy($id)
     {
         $item = InformasiGaleri::findOrFail($id);
+
+        // PASTIKAN LOGIKA PENGHAPUSAN FILE SUDAH BENAR
+        // Jika 'foto_galeri' menyimpan path relatif ke file di storage lokal
+        if ($item->foto_galeri) {
+            // Cek apakah ini URL atau path. Jika bukan URL, anggap path dan coba hapus.
+            if (!filter_var($item->foto_galeri, FILTER_VALIDATE_URL)) {
+                if (Storage::disk('public')->exists($item->foto_galeri)) {
+                    Storage::disk('public')->delete($item->foto_galeri);
+                }
+            }
+            // Jika ini adalah URL eksternal, Anda mungkin tidak perlu melakukan apa-apa,
+            // atau mungkin ada logika lain (misalnya, memberi tahu layanan eksternal).
+        }
+        
         $item->delete();
 
-        return response()->json([
-            'message' => 'Item galeri berhasil dihapus'
-        ]);
+        return response()->json(['message' => 'Item galeri berhasil dihapus'], 200);
     }
 }

@@ -13,6 +13,6 @@ class LaporanAdminSeeder extends Seeder
      */
     public function run(): void
     {
-        LaporanAdmin::factory()->count(10)->create();
+        LaporanAdmin::factory()->count(1)->create();
     }
 }
