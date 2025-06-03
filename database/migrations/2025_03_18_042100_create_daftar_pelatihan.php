@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('daftar_pelatihan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_peserta')->constrained('peserta')->onDelete('cascade'); 
-            $table->foreignId('id_pelatihan')->constrained('pelatihan')->onDelete('cascade'); 
+            $table->foreignId('peserta_id')->constrained('peserta')->onDelete('cascade'); 
+            $table->foreignId('pelatihan_id')->constrained('pelatihan')->onDelete('cascade'); 
             $table->string('kk')->nullable(); 
             $table->string('ktp')->nullable();
             $table->string('ijazah')->nullable();

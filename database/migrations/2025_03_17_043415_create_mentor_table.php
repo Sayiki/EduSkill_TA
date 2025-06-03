@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('mentor', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('admin_id')->nullable()->comment('ID admin yang mengelola mentor');
+            $table->unsignedBigInteger('admin_id')->nullable();
             $table->foreign('admin_id')
                   ->references('id')->on('admin')
                   ->onUpdate('cascade')

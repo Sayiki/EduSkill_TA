@@ -21,10 +21,10 @@ return new class extends Migration
             $table->string('alamat_peserta', 1000)->nullable();
             $table->string('nomor_telp')->nullable();
             $table->enum('status_lulus', ['lulus', 'tidak lulus', 'belum dinilai'])->default('belum dinilai');
-            $table->unsignedBigInteger('id_pendidikan')->nullable();
+            $table->unsignedBigInteger('pendidikan_id')->nullable();
             $table->timestamps();
         
-            $table->foreign('id_pendidikan')->references('id')->on('pendidikan')->onDelete('set null');
+            $table->foreign('pendidikan_id')->references('id')->on('pendidikan')->onDelete('set null');
         });
         
     }

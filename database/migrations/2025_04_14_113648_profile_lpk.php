@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('profile_lpk', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_lembaga');
+            $table->unsignedBigInteger('lembaga_id');
             $table->string('nama_lpk');
             $table->text('deskripsi_lpk');
             $table->string('foto_lpk')->nullable();
             $table->timestamps();
         
-            $table->foreign('id_lembaga')->references('id')->on('informasi_lembaga')->onDelete('cascade');
+            $table->foreign('lembaga_id')->references('id')->on('informasi_lembaga')->onDelete('cascade');
         });
         
     }

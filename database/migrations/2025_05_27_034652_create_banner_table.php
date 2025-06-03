@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('banner', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('admin_id')->nullable()->comment('ID admin yang mengelola banner');
+            $table->unsignedBigInteger('admin_id')->nullable();
             $table->string('nama_banner');
             $table->string('gambar');
             
