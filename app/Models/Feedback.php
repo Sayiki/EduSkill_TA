@@ -12,7 +12,7 @@ class Feedback extends Model
 
     protected $table = 'feedback';
     protected $fillable = [
-        'id_peserta',
+        'peserta_id',
         'comment',
         'status_kerja',
     ];

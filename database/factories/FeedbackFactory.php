@@ -27,7 +27,7 @@ class FeedbackFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_peserta' => Peserta::inRandomOrder()->first()->id ?? Peserta::factory(),
+            'peserta_id' => Peserta::inRandomOrder()->first()->id ?? Peserta::factory(),
             'comment' => substr($this->faker->sentence(10, true), 0, 100),
             'pekerjaan' => $this->faker->randomElement(['janitor', 'worker', 'hacker', 'jonkler']),
 

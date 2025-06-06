@@ -13,6 +13,6 @@ class KetuaSeeder extends Seeder
      */
     public function run(): void
     {
-        Ketua::factory()->count(10)->create();
+        Ketua::factory()->count(1)->create();
     }
 }

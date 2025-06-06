@@ -30,7 +30,7 @@ class DaftarPelatihanController extends Controller
         Log::info('Registration attempt by User ID: ' . $request->user()->id);
 
         $data = $request->validate([
-            'id_pelatihan' => 'required|integer|exists:pelatihan,id',
+            'pelatihan_id' => 'required|integer|exists:pelatihan,id',
             'nik'          => ['required', 'string', 'digits:16'],
             'kk'           => 'nullable|string|max:255', // Asumsi ini path file atau teks
             'ktp'          => 'nullable|string|max:255', // Asumsi ini path file atau teks
@@ -57,7 +57,7 @@ class DaftarPelatihanController extends Controller
             ], 422);
         }
         
-        $hasActiveRegistration = DaftarPelatihan::where('id_peserta', $peserta->id)
+        $hasActiveRegistration = DaftarPelatihan::where('peserta_id', $peserta->id)
                                               ->whereIn('status', ['ditinjau', 'diterima'])
                                               ->exists();
 
@@ -68,8 +68,8 @@ class DaftarPelatihanController extends Controller
         }
 
         $entryData = [
-            'id_peserta'   => $peserta->id,
-            'id_pelatihan' => $data['id_pelatihan'],
+            'peserta_id'   => $peserta->id,
+            'pelatihan_id' => $data['pelatihan_id'],
             'kk'           => $data['kk'] ?? null,
             'ktp'          => $data['ktp'] ?? null,
             'ijazah'       => $data['ijazah'] ?? null,
@@ -148,9 +148,9 @@ class DaftarPelatihanController extends Controller
         }
 
         // Buat notifikasi jika ada pesan yang dihasilkan
-        if (!empty($notificationMessage) && $entry->id_peserta) {
+        if (!empty($notificationMessage) && $entry->peserta_id) {
             Notifikasi::create([
-                'id_peserta' => $entry->id_peserta,
+                'peserta_id' => $entry->peserta_id,
                 'pesan' => $notificationMessage,
                 'status' => 'belum dibaca', // Status notifikasi default
             ]);

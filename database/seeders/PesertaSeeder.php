@@ -20,7 +20,7 @@ class PesertaSeeder extends Seeder
         User::factory()->count(10)->state(['peran' => 'peserta'])->create()->each(function ($user) {
             Peserta::factory()->create([
                 'user_id' => $user->id,
-                'id_pendidikan' => Pendidikan::inRandomOrder()->first()->id,
+                'pendidikan_id' => Pendidikan::inRandomOrder()->first()->id,
                 'status_lulus' => 'belum dinilai',
             ]);
         });

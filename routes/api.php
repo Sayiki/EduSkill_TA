@@ -70,7 +70,7 @@ Route::get('/profile-lpk', [ProfileLPKController::class, 'index']);
 Route::middleware(['jwt.auth'])->group(function () {
     Route::middleware(['peran:peserta'])->group(function () {
         Route::post('/daftar-pelatihan', [DaftarPelatihanController::class, 'store']);
-        Route::get('/peserta/{id}', [PesertaController::class, 'show']);
+        Route::get('/profil-saya', [PesertaController::class, 'showMyProfile']);
         Route::put('/peserta/{id}', [PesertaController::class, 'update']);
         Route::post('/feedback/{id}', [FeedbackController::class, 'store']);
         Route::get('/notifikasi-saya', [NotifikasiController::class, 'indexForCurrentUser']);
@@ -86,39 +86,72 @@ Route::middleware(['jwt.auth'])->group(function () {
             'admin'            => AdminController::class,
             'ketua'            => KetuaController::class,
         ]);
+        // Daftar Pelatihan
         Route::get('/daftar-pelatihan', [DaftarPelatihanController::class, 'index']);
         Route::put('/daftar-pelatihan/{id}', [DaftarPelatihanController::class, 'update']);
         Route::get('/daftar-pelatihan/{id}', [DaftarPelatihanController::class, 'show']);
         Route::delete('/daftar-pelatihan/{id}', [DaftarPelatihanController::class, 'destroy']);
+
+        // Peserta
+        Route::get('/peserta', [PesertaController::class, 'index']);
+        Route::get('/peserta/{id}', [PesertaController::class, 'show']);
         Route::delete('/peserta/{id}', [PesertaController::class, 'destroy']);
+
+        // Feedback
+        Route::get('/feedback', [FeedbackController::class, 'index']);
+        Route::put('/feedback/{id}', [PesertaController::class, 'update']);
         Route::delete('/feedback/{id}', [FeedbackController::class, 'destroy']);
         Route::get('/feedback/{id}', [FeedbackController::class, 'show']);
+
+        // Berita
         Route::post('/berita', [BeritaController::class, 'store']);
         Route::put('/berita/{id}', [BeritaController::class, 'update']);
         Route::delete('/berita/{id}', [BeritaController::class, 'destroy']);
+
+        // Banner
         Route::post('/banner', [BannerController::class, 'store']);
         Route::put('/banner/{id}', [BannerController::class, 'update']); 
         Route::delete('/banner/{id}', [BannerController::class, 'destroy']);
+
+        // Slideshow
         Route::post('/slideshow', [SlideshowController::class, 'store']);
         Route::put('/slideshow/{id}', [SlideshowController::class, 'update']); 
         Route::delete('/slideshow/{id}', [SlideshowController::class, 'destroy']);
+
+        // Mentor
         Route::post('/mentor', [MentorController::class, 'store']);
         Route::put('/mentor/{id}', [MentorController::class, 'update']); 
         Route::delete('/mentor/{id}', [MentorController::class, 'destroy']);
+
+        // Informasi Galeri
         Route::post('/informasi-galeri', [InformasiGaleriController::class, 'store']);
         Route::put('/informasi-galeri/{id}', [InformasiGaleriController::class, 'update']);
         Route::delete('/informasi-galeri/{id}', [InformasiGaleriController::class, 'destroy']);
+
+        // Informasi Kontak
         Route::post('/informasi-kontak', [InformasiKontakController::class, 'store']);
+
+        // Informasi Lembaga
         Route::post('/informasi-lembaga', [InformasiLembagaController::class, 'store']);
+
+        // Laporan Admin
         Route::post('/my-laporan-admin', [LaporanAdminController::class, 'storeOrUpdateMyLaporan']);
         Route::get('/my-laporan-admin', [LaporanAdminController::class, 'showMyLaporan']);
-        Route::post('/notifikasi/pengumuman', [NotifikasiController::class, 'sendAnnouncementToAllPeserta']);
+
+        // Notifikasi announcement
+        Route::post('/notifikasi-pengumuman', [NotifikasiController::class, 'sendAnnouncementToAllPeserta']);
+
+        // Pelatihan
         Route::post('/pelatihan', [PelatihanController::class, 'store']);
         Route::put('/pelatihan/{id}', [PelatihanController::class, 'update']);
         Route::delete('/pelatihan/{id}', [PelatihanController::class, 'destroy']);
+
+        // Pendidikan
         Route::post('/pendidikan', [PendidikanController::class, 'store']);
         Route::put('/pendidikan/{id}', [PendidikanController::class, 'update']);
         Route::delete('/pendidikan/{id}', [PendidikanController::class, 'destroy']);
+
+        // Profile Entitas Tunggal
         Route::post('/profile-yayasan', [ProfileYayasanController::class, 'store']);
         Route::post('/profile-lkp', [ProfileLKPController::class, 'store']);
         Route::post('/profile-lpk', [ProfileLPKController::class, 'store']);
@@ -126,8 +159,8 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::middleware(['jwt.auth', 'peran:ketua'])->group(function () {
         Route::get('/laporan-admin', [LaporanAdminController::class, 'index']);
-        Route::get('/laporan-admin/{id_laporan}', [LaporanAdminController::class, 'showLaporanByIdForKetua']);
-        Route::delete('/laporan-admin/{id_laporan}', [LaporanAdminController::class, 'destroy']);
+        Route::get('/laporan-admin/{id}', [LaporanAdminController::class, 'showLaporanByIdForKetua']);
+        Route::delete('/laporan-admin/{id}', [LaporanAdminController::class, 'destroy']);
     });
 
 });

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB; // Untuk transaksi database
 use Illuminate\Support\Facades\Hash; // Jika ada update password
 use Illuminate\Support\Facades\Storage; // Untuk file upload
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class PesertaController extends Controller
 {
@@ -38,7 +39,7 @@ class PesertaController extends Controller
             'tanggal_lahir' => ['nullable', 'date'],
             'foto_peserta' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'], // Max 2MB
             'status_kerja' => ['nullable', Rule::in(['bekerja', 'belum_bekerja', 'kuliah', 'wirausaha', 'tidak_diketahui'])],
-            'id_pendidikan' => ['nullable', 'integer', 'exists:pendidikan,id'],
+            'peserta_id' => ['nullable', 'integer', 'exists:pendidikan,id'],
         ]);
 
         if ($request->hasFile('foto_peserta')) {
@@ -55,101 +56,60 @@ class PesertaController extends Controller
 
     public function show($id)
     {
-        // Selalu load relasi 'user'
         $peserta = Peserta::with(['user', 'pendidikan'])->find($id);
 
         if (!$peserta) {
             return response()->json(['message' => 'Data Peserta tidak ditemukan'], 404);
         }
 
-        // Otorisasi tambahan jika diperlukan:
-        // Jika yang mengakses adalah peserta, pastikan dia hanya mengakses profilnya sendiri.
-        $loggedInUser = auth()->user();
+        // --- BLOK OTORISASI ---
+        $loggedInUser = Auth::user();
+        // Jika yang mengakses adalah PESERTA, cek apakah ID peserta yang diminta adalah miliknya.
         if ($loggedInUser->peran === 'peserta' && $peserta->user_id !== $loggedInUser->id) {
-            return response()->json(['message' => 'Anda tidak diizinkan untuk melihat profil ini.'], 403);
+            return response()->json(['message' => 'Akses ditolak. Anda hanya bisa melihat profil Anda sendiri.'], 403);
         }
+        // Jika yang mengakses adalah ADMIN, dia bisa melihat profil siapa saja, jadi tidak ada pengecekan tambahan.
 
         return response()->json(['data' => $peserta]);
     }
 
     public function update(Request $request, $id)
     {
-        $peserta = Peserta::find($id);
+        $user = Auth::user();
+        // Gunakan firstOrCreate untuk membuat profil peserta jika belum ada
+        $peserta = Peserta::firstOrCreate(['user_id' => $user->id]);
 
-        if (!$peserta) {
-            return response()->json(['message' => 'Data Peserta tidak ditemukan'], 404);
-        }
-
-        $userToUpdate = $peserta->user; // Dapatkan model User yang berelasi
-
-        // Otorisasi: Peserta hanya boleh mengedit profilnya sendiri. Admin boleh mengedit siapa saja.
-        $loggedInUser = $request->user();
-        if ($loggedInUser->peran === 'peserta' && $peserta->user_id !== $loggedInUser->id) {
-            return response()->json(['message' => 'Anda tidak diizinkan untuk memperbarui profil ini.'], 403);
-        }
-
-        // Validasi data. Gunakan 'sometimes' agar hanya field yang dikirim yang divalidasi.
+        // Validasi data yang masuk
         $validatedData = $request->validate([
-            // Fields untuk tabel 'users'
             'name' => 'sometimes|string|max:255',
-            'email' => ['sometimes', 'string', 'email', 'max:255', Rule::unique('users')->ignore($userToUpdate->id)],
-            // Anda bisa menambahkan validasi untuk 'username' jika diperlukan
-            // 'username' => ['sometimes', 'string', 'max:255', Rule::unique('users')->ignore($userToUpdate->id)],
-
-            // Fields untuk tabel 'peserta'
-            'nik_peserta' => ['sometimes', 'nullable', 'string', 'digits:16', Rule::unique('peserta', 'nik_peserta')->ignore($peserta->id)],
+            'email' => ['sometimes', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'nik_peserta' => ['sometimes', 'nullable', 'string', 'digits:16', Rule::unique('peserta')->ignore($peserta->id)],
             'jenis_kelamin' => ['sometimes', 'nullable', Rule::in(['Laki-laki', 'Perempuan'])],
             'alamat_peserta' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'nomor_telp' => ['sometimes', 'nullable', 'string', 'max:20'],
             'tanggal_lahir' => ['sometimes', 'nullable', 'date'],
-            'foto_peserta' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'], // Max 2MB
-            'status_kerja' => ['sometimes', 'nullable', Rule::in(['bekerja', 'belum_bekerja', 'kuliah', 'wirausaha', 'tidak_diketahui'])],
-            'id_pendidikan' => ['sometimes', 'nullable', 'integer', 'exists:pendidikan,id'],
+            'foto_peserta' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'pendidikan_id' => ['sometimes', 'nullable', 'integer', 'exists:pendidikan,id'],
         ]);
 
         try {
-            DB::transaction(function () use ($request, $userToUpdate, $peserta, $validatedData) {
-                // 1. Update data di tabel 'users'
-                $userDataToUpdate = [];
-                if ($request->has('name')) $userDataToUpdate['name'] = $validatedData['name'];
-                if ($request->has('email')) $userDataToUpdate['email'] = $validatedData['email'];
-                // if ($request->has('username')) $userDataToUpdate['username'] = $validatedData['username'];
+            DB::transaction(function () use ($request, $user, $peserta) {
+                // 1. Update data di tabel 'users' jika ada
+                $user->update($request->only('name', 'email'));
 
-                if (!empty($userDataToUpdate)) {
-                    $userToUpdate->update($userDataToUpdate);
-                }
+                // 2. Siapkan data untuk update tabel 'peserta'
+                $pesertaDataToUpdate = $request->except(['name', 'email', 'foto_peserta']);
 
-                // 2. Update data di tabel 'peserta'
-                $pesertaDataToUpdate = [];
-                if ($request->has('nik_peserta')) $pesertaDataToUpdate['nik_peserta'] = $validatedData['nik_peserta'];
-                if ($request->has('jenis_kelamin')) $pesertaDataToUpdate['jenis_kelamin'] = $validatedData['jenis_kelamin'];
-                if ($request->has('alamat_peserta')) $pesertaDataToUpdate['alamat_peserta'] = $validatedData['alamat_peserta'];
-                if ($request->has('nomor_telp')) $pesertaDataToUpdate['nomor_telp'] = $validatedData['nomor_telp'];
-                if ($request->has('tanggal_lahir')) $pesertaDataToUpdate['tanggal_lahir'] = $validatedData['tanggal_lahir'];
-                if ($request->has('status_kerja')) $pesertaDataToUpdate['status_kerja'] = $validatedData['status_kerja'];
-                if ($request->has('id_pendidikan')) $pesertaDataToUpdate['id_pendidikan'] = $validatedData['id_pendidikan'];
-
-
-                // Handle file upload untuk foto_peserta
+                // Handle upload file untuk foto_peserta
                 if ($request->hasFile('foto_peserta')) {
-                    // Hapus foto lama jika ada
                     if ($peserta->foto_peserta && Storage::disk('public')->exists($peserta->foto_peserta)) {
                         Storage::disk('public')->delete($peserta->foto_peserta);
                     }
                     $path = $request->file('foto_peserta')->store('foto_profil_peserta', 'public');
                     $pesertaDataToUpdate['foto_peserta'] = $path;
-                } elseif ($request->filled('remove_foto_peserta') && $request->boolean('remove_foto_peserta')) {
-                     // Logika jika ingin menghapus foto tanpa mengupload yang baru
-                    if ($peserta->foto_peserta && Storage::disk('public')->exists($peserta->foto_peserta)) {
-                        Storage::disk('public')->delete($peserta->foto_peserta);
-                    }
-                    $pesertaDataToUpdate['foto_peserta'] = null;
                 }
-
-
-                if (!empty($pesertaDataToUpdate)) {
-                    $peserta->update($pesertaDataToUpdate);
-                }
+                
+                $peserta->update($pesertaDataToUpdate);
             });
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal memperbarui profil.', 'error' => $e->getMessage()], 500);
@@ -157,7 +117,7 @@ class PesertaController extends Controller
 
         return response()->json([
             'message' => 'Profil berhasil diperbarui',
-            'data' => $peserta->fresh()->load(['user', 'pendidikan']), // Kirim data peserta yang sudah fresh
+            'data' => $peserta->fresh()->load(['user', 'pendidikan']),
         ]);
     }
 
@@ -192,5 +152,22 @@ class PesertaController extends Controller
         }
 
         return response()->json(['message' => 'Peserta berhasil dihapus']);
+    }
+
+    public function showMyProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        // Ambil profil peserta yang berelasi, beserta relasi user dan pendidikan
+        $peserta = Peserta::with(['user', 'pendidikan'])
+                          ->where('user_id', $user->id)
+                          ->first();
+
+        if (!$peserta) {
+            // Jika user ada tapi profil peserta belum dibuat, kembalikan data user dasar
+            return response()->json(['data' => $user, 'message' => 'Profil peserta belum lengkap.']);
+        }
+
+        return response()->json(['data' => $peserta]);
     }
 }

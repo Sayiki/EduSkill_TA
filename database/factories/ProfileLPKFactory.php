@@ -19,7 +19,7 @@ class ProfileLPKFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_lembaga' => \App\Models\InformasiLembaga::factory(),
+            'lembaga_id' => \App\Models\InformasiLembaga::factory(),
             'nama_lpk' => $this->faker->company(),
             'deskripsi_lpk' => $this->faker->paragraph(),
             'foto_lpk' => $this->faker->imageUrl()

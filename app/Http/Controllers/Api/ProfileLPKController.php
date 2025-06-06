@@ -29,7 +29,7 @@ class ProfileLPKController extends Controller
     /**
      * Menyimpan atau memperbarui informasi profile LPK (hanya Admin).
      * Ini akan bertindak sebagai "upsert".
-     * id_lembaga akan diambil secara otomatis.
+     * lembaga_id akan diambil secara otomatis.
      */
     public function store(Request $request)
     {
@@ -45,7 +45,7 @@ class ProfileLPKController extends Controller
             'foto_lpk'      => 'nullable|string|max:10000', 
         ]);
         
-        $validatedData['id_lembaga'] = $informasiLembaga->id;
+        $validatedData['lembaga_id'] = $informasiLembaga->id;
         
         $profile = ProfileLPK::first(); 
 
@@ -101,7 +101,7 @@ class ProfileLPKController extends Controller
             'foto_lpk'      => 'sometimes|nullable|string|max:10000',
         ]);
 
-        $validatedData['id_lembaga'] = $informasiLembaga->id;
+        $validatedData['lembaga_id'] = $informasiLembaga->id;
 
         if ($request->filled('foto_lpk') && isset($validatedData['foto_lpk']) && $validatedData['foto_lpk'] !== $profile->foto_lpk) {
             if ($profile->foto_lpk && !filter_var($profile->foto_lpk, FILTER_VALIDATE_URL)) {

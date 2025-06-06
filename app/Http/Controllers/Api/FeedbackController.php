@@ -39,7 +39,7 @@ class FeedbackController extends Controller
             'status_kerja' => ['nullable', 'string', 'max:255'],
         ]);
         
-        $validatedData['id_peserta'] = $peserta->id;
+        $validatedData['peserta_id'] = $peserta->id;
 
         $feedback = Feedback::create($validatedData);
 

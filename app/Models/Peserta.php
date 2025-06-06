@@ -23,7 +23,7 @@ class Peserta extends Model
         'nomor_telp',
         'status_lulus',
         'status_kerja',
-        'id_pendidikan',
+        'pendidikan_id',
     ];
 
     public function user()

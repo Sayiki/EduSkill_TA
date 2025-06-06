@@ -27,8 +27,8 @@ class DaftarPelatihanFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_peserta' => Peserta::inRandomOrder()->first()->id ?? Peserta::factory(),
-            'id_pelatihan' => Pelatihan::inRandomOrder()->first()->id ?? Pelatihan::factory(),
+            'peserta_id' => Peserta::inRandomOrder()->first()->id ?? Peserta::factory(),
+            'pelatihan_id' => Pelatihan::inRandomOrder()->first()->id ?? Pelatihan::factory(),
             'kk' => $this->faker->imageUrl(640, 480, 'kk', true, 'Faker'),
             'ktp' => $this->faker->imageUrl(640, 480, 'ktp', true, 'Faker'),
             'ijazah' => $this->faker->imageUrl(640, 480, 'ijazah', true, 'Faker'),

@@ -22,7 +22,7 @@ class UserSeeder extends Seeder
         User::factory()->count(10)->peserta()->create()->each(function ($user) {
             Peserta::factory()->create([
                 'user_id' => $user->id,
-                'id_pendidikan' => Pendidikan::inRandomOrder()->value('id'),
+                'pendidikan_id' => Pendidikan::inRandomOrder()->value('id'),
             ]);
         });
 

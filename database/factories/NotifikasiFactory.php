@@ -27,7 +27,7 @@ class NotifikasiFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_peserta' => Peserta::inRandomOrder()->first()->id ?? Peserta::factory(),
+            'peserta_id' => Peserta::inRandomOrder()->first()->id ?? Peserta::factory(),
             'pesan' => $this->faker->sentence(6, true),
             'status' => $this->faker->randomElement(['belum dibaca', 'dibaca']),
         ];

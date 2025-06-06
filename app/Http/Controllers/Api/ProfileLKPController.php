@@ -29,7 +29,7 @@ class ProfileLKPController extends Controller
     /**
      * Menyimpan atau memperbarui informasi profile LKP (hanya Admin).
      * Ini akan bertindak sebagai "upsert".
-     * id_lembaga akan diambil secara otomatis.
+     * lembaga_id akan diambil secara otomatis.
      */
     public function store(Request $request)
     {
@@ -41,14 +41,14 @@ class ProfileLKPController extends Controller
         }
 
         $validatedData = $request->validate([
-            // 'id_lembaga' tidak lagi divalidasi dari request
+            // 'lembaga_id' tidak lagi divalidasi dari request
             'nama_lkp'      => 'required|string|max:255',
             'deskripsi_lkp' => 'required|string',
             'foto_lkp'      => 'nullable|string|max:2048', // Asumsi string URL/path
         ]);
         
-        // Tambahkan id_lembaga secara otomatis
-        $validatedData['id_lembaga'] = $informasiLembaga->id;
+        // Tambahkan lembaga_id secara otomatis
+        $validatedData['lembaga_id'] = $informasiLembaga->id;
         
         $profile = ProfileLKP::first(); // Asumsi hanya ada satu profil LKP
 
@@ -99,14 +99,14 @@ class ProfileLKPController extends Controller
         }
 
         $validatedData = $request->validate([
-            // 'id_lembaga' tidak lagi divalidasi dari request
+            // 'lembaga_id' tidak lagi divalidasi dari request
             'nama_lkp'      => 'sometimes|required|string|max:255',
             'deskripsi_lkp' => 'sometimes|required|string',
             'foto_lkp'      => 'sometimes|nullable|string|max:2048',
         ]);
 
-        // Tambahkan id_lembaga secara otomatis
-        $validatedData['id_lembaga'] = $informasiLembaga->id;
+        // Tambahkan lembaga_id secara otomatis
+        $validatedData['lembaga_id'] = $informasiLembaga->id;
 
         // Logika hapus foto lama
         if ($request->filled('foto_lkp') && isset($validatedData['foto_lkp']) && $validatedData['foto_lkp'] !== $profile->foto_lkp) {

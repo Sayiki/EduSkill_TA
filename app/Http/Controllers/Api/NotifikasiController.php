@@ -26,7 +26,7 @@ class NotifikasiController extends Controller
         $pesertaId = $user->peserta->id;
 
         $perPage = $request->query('per_page', 10);
-        $notifikasi = Notifikasi::where('id_peserta', $pesertaId)
+        $notifikasi = Notifikasi::where('peserta_id', $pesertaId)
                                 ->latest() 
                                 ->paginate($perPage);
 
@@ -40,7 +40,7 @@ class NotifikasiController extends Controller
     public function storeForAdmin(Request $request)
     {
         $validatedData = $request->validate([
-            'id_peserta' => 'required|integer|exists:peserta,id',
+            'peserta_id' => 'required|integer|exists:peserta,id',
             'pesan'      => 'required|string|max:1000',
         ]);
 
@@ -79,7 +79,7 @@ class NotifikasiController extends Controller
 
         foreach ($targetPesertaIds as $pesertaId) {
             $notificationsData[] = [
-                'id_peserta' => $pesertaId,
+                'peserta_id' => $pesertaId,
                 'pesan' => $pesan,
                 'status' => 'belum dibaca',
                 'created_at' => $now,
@@ -109,7 +109,7 @@ class NotifikasiController extends Controller
         $pesertaId = $user->peserta->id;
 
         $notifikasi = Notifikasi::where('id', $id_notifikasi)
-                                ->where('id_peserta', $pesertaId)
+                                ->where('peserta_id', $pesertaId)
                                 ->firstOrFail();
 
         return new NotifikasiResource($notifikasi);
@@ -128,7 +128,7 @@ class NotifikasiController extends Controller
         $pesertaId = $user->peserta->id;
 
         $notifikasi = Notifikasi::where('id', $id_notifikasi)
-                                ->where('id_peserta', $pesertaId)
+                                ->where('peserta_id', $pesertaId)
                                 ->firstOrFail();
 
         $validatedData = $request->validate([
@@ -153,7 +153,7 @@ class NotifikasiController extends Controller
         $pesertaId = $user->peserta->id;
 
         $notifikasi = Notifikasi::where('id', $id_notifikasi)
-                                ->where('id_peserta', $pesertaId)
+                                ->where('peserta_id', $pesertaId)
                                 ->firstOrFail();
         
         $notifikasi->delete();

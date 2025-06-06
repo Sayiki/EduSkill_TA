@@ -16,7 +16,7 @@ class ProfileLKPResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'id_lembaga' => $this->id_lembaga,
+            'lembaga_id' => $this->id_lembaga,
             'nama_lkp' => $this->nama_lkp,
             'deskripsi_lkp' => $this->deskripsi_lkp,
             'foto_lkp' => $this->foto_lkp ? (filter_var($this->foto_lkp, FILTER_VALIDATE_URL) ? $this->foto_lkp : asset('storage/' . $this->foto_lkp)) : null,

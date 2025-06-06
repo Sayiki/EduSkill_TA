@@ -33,7 +33,7 @@ class PesertaFactory extends Factory
             'jenis_kelamin' => $this->faker->randomElement(['Laki-laki', 'Perempuan']),
             'alamat_peserta' => $this->faker->address(),
             'nomor_telp' => $this->faker->numerify('08##########'),
-            'id_pendidikan' => null,
+            'pendidikan_id' => null,
             'foto_peserta' => $this->faker->imageUrl(400, 400, 'people', true),
             
         ];

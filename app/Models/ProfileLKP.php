@@ -9,10 +9,10 @@ class ProfileLKP extends Model
 {
     use HasFactory;
     protected $table = 'profile_lkp';
-    protected $fillable = ['id_lembaga', 'nama_lkp', 'deskripsi_lkp', 'foto_lkp'];
+    protected $fillable = ['lembaga_id', 'nama_lkp', 'deskripsi_lkp', 'foto_lkp'];
 
     public function lembaga()
     {
-        return $this->belongsTo(InformasiLembaga::class, 'id_lembaga');
+        return $this->belongsTo(InformasiLembaga::class, 'lembaga_id');
     }
 }

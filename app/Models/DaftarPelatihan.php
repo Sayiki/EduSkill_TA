@@ -12,8 +12,8 @@ class DaftarPelatihan extends Model
     protected $table = 'daftar_pelatihan';
 
     protected $fillable = [
-        'id_peserta',
-        'id_pelatihan',
+        'peserta_id',
+        'pelatihan_id',
         'kk',
         'ktp',
         'ijazah',
