@@ -29,7 +29,7 @@ class FeedbackFactory extends Factory
         return [
             'peserta_id' => Peserta::inRandomOrder()->first()->id ?? Peserta::factory(),
             'comment' => substr($this->faker->sentence(10, true), 0, 100),
-            'pekerjaan' => $this->faker->randomElement(['janitor', 'worker', 'hacker', 'jonkler']),
+            'tempat_kerja' => $this->faker->randomElement(['janitor', 'worker', 'hacker', 'jonkler']),
 
         ];
     }

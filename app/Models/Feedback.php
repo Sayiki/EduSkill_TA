@@ -14,7 +14,7 @@ class Feedback extends Model
     protected $fillable = [
         'peserta_id',
         'comment',
-        'status_kerja',
+        'tempat_kerja',
     ];
 
     public function peserta()

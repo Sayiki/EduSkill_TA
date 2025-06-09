@@ -36,7 +36,7 @@ class FeedbackController extends Controller
 
         $validatedData = $request->validate([
             'comment'      => 'required|string|max:1000', 
-            'status_kerja' => ['nullable', 'string', 'max:255'],
+            'tempat_kerja' => ['nullable', 'string', 'max:255'],
         ]);
         
         $validatedData['peserta_id'] = $peserta->id;
@@ -71,7 +71,7 @@ class FeedbackController extends Controller
 
         $data = $request->validate([
             'comment'      => 'sometimes|required|string|max:1000',
-            'status_kerja' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'tempat_kerja' => ['sometimes', 'nullable', 'string', 'max:255'],
         ]);
 
         $fb->update($data);
