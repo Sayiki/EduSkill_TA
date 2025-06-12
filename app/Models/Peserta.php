@@ -37,4 +37,9 @@ class Peserta extends Model
         return $this->belongsTo(Pendidikan::class, 'pendidikan_id');
     }
 
+    public function feedback()
+    {
+        return $this->hasOne(Feedback::class, 'peserta_id');
+    }
+
 }

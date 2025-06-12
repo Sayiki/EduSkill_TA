@@ -65,6 +65,8 @@ Route::get('/profile-lkp', [ProfileLKPController::class, 'index']);
 
 Route::get('/profile-lpk', [ProfileLPKController::class, 'index']);
 
+Route::get('/peserta-alumni', [PesertaController::class, 'getPublicProfiles']);
+
 
 
 Route::middleware(['jwt.auth'])->group(function () {

@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Hash; // Jika ada update password
 use Illuminate\Support\Facades\Storage; // Untuk file upload
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
+use App\Http\Resources\PesertaPublicResource;
 
 class PesertaController extends Controller
 {
@@ -169,5 +171,23 @@ class PesertaController extends Controller
         }
 
         return response()->json(['data' => $peserta]);
+    }
+
+    public function getPublicProfiles(Request $request)
+    {
+        $pesertaHighlights = Peserta::with(['user', 'feedback'])
+            
+            // HANYA ambil Peserta yang MEMILIKI feedback
+            // DAN di dalam feedback itu, 'tempat_kerja' tidak null.
+            ->whereHas('feedback', function (Builder $query) {
+                $query->whereNotNull('tempat_kerja');
+            })
+            
+            ->whereNotNull('foto_peserta')
+            ->inRandomOrder()
+            ->limit(5)
+            ->get();
+
+        return PesertaPublicResource::collection($pesertaHighlights);
     }
 }
