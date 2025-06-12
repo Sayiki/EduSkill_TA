@@ -39,7 +39,7 @@ class UserSeeder extends Seeder
         ]);
 
         // 1 Peserta
-        $adminUser = User::factory()->admin()->create([
+        $adminUser = User::factory()->peserta()->create([
             'name' => 'peserta',
             'username' => 'peserta',
             'email' => 'peserta@example.com',
