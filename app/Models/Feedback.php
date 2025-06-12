@@ -19,7 +19,7 @@ class Feedback extends Model
 
     public function peserta()
     {
-        return $this->belongsTo(Peserta::class, 'id_peserta');
+        return $this->belongsTo(Peserta::class, 'peserta_id');
     }
 
 

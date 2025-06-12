@@ -30,16 +30,14 @@ class LaporanAdminController extends Controller
 
     /**
      * Menampilkan laporan admin spesifik (untuk Ketua).
-     * GET /api/laporan-admin/{id_laporan}
      */
-    public function showLaporanByIdForKetua($id_laporan)
+    public function showLaporanByIdForKetua($laporan_id)
     {
-        $laporan = LaporanAdmin::with('admin.user')->find($id_laporan);
+        $laporan = LaporanAdmin::with('admin.user')->find($laporan_id);
         if (!$laporan) {
             return response()->json(['message' => 'Laporan Admin tidak ditemukan'], 404);
         }
-        // Pastikan Anda memiliki LaporanAdminPolicy dengan metode view
-        // $this->authorize('view', $laporan); 
+
         return new LaporanAdminResource($laporan);
     }
 
@@ -56,15 +54,7 @@ class LaporanAdminController extends Controller
         }
         $admin = $loggedInUser->adminProfile;
 
-        // Pastikan Anda memiliki LaporanAdminPolicy dengan metode create atau update
-        // Untuk updateOrCreate, Anda mungkin perlu logika kustom di policy
-        // atau dua metode berbeda di controller (createMyLaporan, updateMyLaporan)
-        // $this->authorize('create', LaporanAdmin::class); // Jika membuat baru
-        // $existingLaporan = LaporanAdmin::where('admin_id', $admin->id)->first();
-        // if ($existingLaporan) {
-        //     $this->authorize('update', $existingLaporan); // Jika memperbarui
-        // }
-
+ 
 
         $validatedData = $request->validate([
             'jumlah_peserta'         => 'required|integer|min:0',
@@ -102,14 +92,13 @@ class LaporanAdminController extends Controller
         if (!$laporan) {
             return response()->json(['message' => 'Anda belum membuat laporan.'], 404);
         }
-        // Pastikan Anda memiliki LaporanAdminPolicy dengan metode viewOwn atau view
-        // $this->authorize('viewOwn', $laporan); 
+
         return new LaporanAdminResource($laporan);
     }
 
-    public function destroy(Request $request, $id_laporan) // Changed parameter name for clarity
+    public function destroy(Request $request, $laporan_id) 
     {
-        $laporan = LaporanAdmin::find($id_laporan);
+        $laporan = LaporanAdmin::find($laporan_id);
 
         if (!$laporan) {
             return response()->json(['message' => 'Laporan Admin tidak ditemukan'], 404);

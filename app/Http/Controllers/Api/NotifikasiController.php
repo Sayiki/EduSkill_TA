@@ -100,7 +100,7 @@ class NotifikasiController extends Controller
      * Menampilkan detail notifikasi spesifik milik peserta yang login.
      * GET /api/notifikasi-saya/{id_notifikasi}
      */
-    public function showForCurrentUser(Request $request, $id_notifikasi)
+    public function showForCurrentUser(Request $request, $notifikasi_id)
     {
         $user = Auth::user();
         if (!$user || !$user->peserta) {
@@ -108,7 +108,7 @@ class NotifikasiController extends Controller
         }
         $pesertaId = $user->peserta->id;
 
-        $notifikasi = Notifikasi::where('id', $id_notifikasi)
+        $notifikasi = Notifikasi::where('id', $notifikasi_id)
                                 ->where('peserta_id', $pesertaId)
                                 ->firstOrFail();
 
@@ -119,7 +119,7 @@ class NotifikasiController extends Controller
      * (Untuk Peserta) Memperbarui status notifikasi (misalnya, menjadi 'dibaca').
      * PUT /api/notifikasi-saya/{id_notifikasi}
      */
-    public function updateStatusForCurrentUser(Request $request, $id_notifikasi)
+    public function updateStatusForCurrentUser(Request $request, $notifikasi_id)
     {
         $user = Auth::user();
         if (!$user || !$user->peserta) {
@@ -127,7 +127,7 @@ class NotifikasiController extends Controller
         }
         $pesertaId = $user->peserta->id;
 
-        $notifikasi = Notifikasi::where('id', $id_notifikasi)
+        $notifikasi = Notifikasi::where('id', $notifikasi_id)
                                 ->where('peserta_id', $pesertaId)
                                 ->firstOrFail();
 
@@ -144,7 +144,7 @@ class NotifikasiController extends Controller
      * (Untuk Peserta) Menghapus notifikasi miliknya.
      * DELETE /api/notifikasi-saya/{id_notifikasi}
      */
-    public function destroyForCurrentUser(Request $request, $id_notifikasi)
+    public function destroyForCurrentUser(Request $request, $notifikasi_id)
     {
         $user = Auth::user();
         if (!$user || !$user->peserta) {
@@ -152,7 +152,7 @@ class NotifikasiController extends Controller
         }
         $pesertaId = $user->peserta->id;
 
-        $notifikasi = Notifikasi::where('id', $id_notifikasi)
+        $notifikasi = Notifikasi::where('id', $notifikasi_id)
                                 ->where('peserta_id', $pesertaId)
                                 ->firstOrFail();
         

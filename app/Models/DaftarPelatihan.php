@@ -22,11 +22,11 @@ class DaftarPelatihan extends Model
 
     public function peserta()
     {
-        return $this->belongsTo(Peserta::class, 'id_peserta');
+        return $this->belongsTo(Peserta::class, 'peserta_id');
     }
 
     public function pelatihan()
     {
-        return $this->belongsTo(Pelatihan::class, 'id_pelatihan');
+        return $this->belongsTo(Pelatihan::class, 'pelatihan_id');
     }
 }

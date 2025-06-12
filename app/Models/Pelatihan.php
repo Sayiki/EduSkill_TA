@@ -54,6 +54,6 @@ class Pelatihan extends Model
      */
     public function pendaftar()
     {
-        return $this->hasMany(DaftarPelatihan::class, 'id_pelatihan');
+        return $this->hasMany(DaftarPelatihan::class, 'pelatihan_id');
     }
 }

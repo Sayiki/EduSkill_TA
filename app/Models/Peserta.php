@@ -34,7 +34,7 @@ class Peserta extends Model
 
     public function pendidikan()
     {
-        return $this->belongsTo(Pendidikan::class, 'id_pendidikan');
+        return $this->belongsTo(Pendidikan::class, 'pendidikan_id');
     }
 
 }
