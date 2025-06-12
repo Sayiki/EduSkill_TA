@@ -82,10 +82,13 @@ Route::middleware(['jwt.auth'])->group(function () {
 
 
     Route::middleware(['peran:admin'])->group(function(){
-        Route::apiResources([
-            'admin'            => AdminController::class,
-            'ketua'            => KetuaController::class,
-        ]);
+
+        Route::get('/admin', [DaftarPelatihanController::class, 'index']);
+        Route::get('/admin/{id}', [DaftarPelatihanController::class, 'show']);
+
+
+        Route::get('/ketua', [DaftarPelatihanController::class, 'index']);
+        Route::get('/ketua/{id}', [DaftarPelatihanController::class, 'show']);
         // Daftar Pelatihan
         Route::get('/daftar-pelatihan', [DaftarPelatihanController::class, 'index']);
         Route::put('/daftar-pelatihan/{id}', [DaftarPelatihanController::class, 'update']);

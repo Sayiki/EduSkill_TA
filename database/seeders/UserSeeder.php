@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // 10 Peserta
-        User::factory()->count(10)->peserta()->create()->each(function ($user) {
+        User::factory()->count(9)->peserta()->create()->each(function ($user) {
             Peserta::factory()->create([
                 'user_id' => $user->id,
                 'pendidikan_id' => Pendidikan::inRandomOrder()->value('id'),
@@ -31,6 +31,18 @@ class UserSeeder extends Seeder
             'name' => 'Admin Guy',
             'username' => 'admin',
             'email' => 'admin@example.com',
+            'password' => Hash::make('password'),
+        ]);
+        
+        Admin::factory()->create([
+            'user_id' => $adminUser->id,
+        ]);
+
+        // 1 Peserta
+        $adminUser = User::factory()->admin()->create([
+            'name' => 'peserta',
+            'username' => 'peserta',
+            'email' => 'peserta@example.com',
             'password' => Hash::make('password'),
         ]);
         
