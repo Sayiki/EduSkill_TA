@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Peserta;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rules\Password;
 
 
 class AuthController extends Controller
@@ -27,20 +28,17 @@ class AuthController extends Controller
             return response()->json(['error' => 'Username atau password salah.'], 401);
         }
 
-        // --- REVISED TOKEN GENERATION ---
-        // Add the 'peran' as a custom claim into the token itself.
+
         $customClaims = ['peran' => $user->peran];
 
-        // Generate the token with the custom claims for the user.
+
         $token = JWTAuth::customClaims($customClaims)->fromUser($user);
 
-        // Eager load the specific profile based on the user's 'peran'
-        // This attaches the Peserta, Admin, or Ketua details to the user object.
+
         if ($user->peran && in_array($user->peran, ['peserta', 'admin', 'ketua'])) {
             $user->load($user->peran);
         }
 
-        // Return a single, consistent response for all roles.
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
@@ -79,8 +77,14 @@ class AuthController extends Controller
                 'email' => 'required|email|unique:users,email',
                 'username' => 'required|string|unique:users,username',
                 'name' => 'required|string',
-                'nomor_telp' => 'required|string',
-                'password' => 'required|string|min:6|confirmed',
+                'nomor_telp' => 'required|string|min:8|max:12',
+                'password' => ['required', 'confirmed',
+                    Password::min(8)
+                        ->letters()
+                        ->mixedCase()
+                        ->numbers()
+                        ->symbols()
+                ],
             ]);
 
             $user = User::create([
@@ -112,6 +116,17 @@ class AuthController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function refresh()
+    {
+        // This will automatically invalidate the old token and return a new one.
+        // The refresh token is sent via the Authorization header.
+        return response()->json([
+            'access_token' => auth()->refresh(),
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60,
+        ]);
     }
 
 }

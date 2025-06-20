@@ -70,6 +70,9 @@ Route::get('/peserta-alumni', [PesertaController::class, 'getPublicProfiles']);
 
 
 Route::middleware(['jwt.auth'])->group(function () {
+
+    Route::post('refresh', [AuthController::class, 'refresh']);
+    
     Route::middleware(['peran:peserta'])->group(function () {
         Route::post('/daftar-pelatihan', [DaftarPelatihanController::class, 'store']);
         Route::get('/profil-saya', [PesertaController::class, 'showMyProfile']);

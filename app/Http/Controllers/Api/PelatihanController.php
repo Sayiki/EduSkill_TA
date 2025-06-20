@@ -35,9 +35,10 @@ class PelatihanController extends Controller
         $validatedData = $request->validate([
             'nama_pelatihan'       => 'required|string|max:100',
             'keterangan_pelatihan' => 'required|string|max:350',
+            'kategori'             => 'required|string|max:100',
+            'biaya'                => 'required|string',
             'jumlah_kuota'         => 'required|integer|min:1',
-            // 'jumlah_peserta' diisi 0 saat awal, akan diupdate saat peserta diterima
-            'waktu_pengumpulan'    => 'required|date_format:Y-m-d H:i:s', // Misal: 2025-12-31 23:59:00
+            'waktu_pengumpulan'    => 'required|date_format:Y-m-d H:i:s',
             'mentor_id'            => 'nullable|integer|exists:mentor,id',
         ]);
 
@@ -76,12 +77,13 @@ class PelatihanController extends Controller
         $pelatihan = Pelatihan::findOrFail($id);
 
         $validatedData = $request->validate([
-            'nama_pelatihan'       => 'sometimes|required|string|max:100',
-            'keterangan_pelatihan' => 'sometimes|required|string|max:350',
-            'jumlah_kuota'         => 'sometimes|required|integer|min:1',
-            // 'jumlah_peserta' sebaiknya tidak diupdate manual di sini, tapi oleh sistem
-            'waktu_pengumpulan'    => 'sometimes|required|date_format:Y-m-d H:i:s',
-            'mentor_id'            => 'sometimes|nullable|integer|exists:mentor,id',
+            'nama_pelatihan'       => 'required|string|max:100',
+            'keterangan_pelatihan' => 'required|string|max:350',
+            'kategori'             => 'required|string|max:100',
+            'biaya'                => 'required|string',
+            'jumlah_kuota'         => 'required|integer|min:1',
+            'waktu_pengumpulan'    => 'required|date_format:Y-m-d H:i:s',
+            'mentor_id'            => 'nullable|integer|exists:mentor,id',
         ]);
 
         // admin_id (pembuat asli) tidak diubah saat update.
