@@ -15,14 +15,9 @@ class BannerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
-        // Mungkin Anda ingin mengurutkan atau membatasi jumlah banner
-        $banner = Banner::latest()->get(); 
-        
-        $perPage = $request->query('per_page', 5);
-        $banner = Banner::latest()->paginate($perPage);
-
+        $banner = Banner::latest()->get();
         return BannerResource::collection($banner);
     }
 

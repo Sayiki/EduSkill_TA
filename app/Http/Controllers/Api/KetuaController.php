@@ -8,13 +8,9 @@ use App\Models\Ketua;
 
 class KetuaController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $perPage = $request->query('per_page', 10);
-
-        $ketua = Ketua::with('user')
-                      ->paginate($perPage);
-
+        $ketua = Ketua::with('user')->get();
         return response()->json($ketua);
     }
 

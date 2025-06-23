@@ -14,11 +14,9 @@ class PendidikanController extends Controller
      * Menampilkan daftar semua tingkat pendidikan (publik).
      * GET /api/pendidikan
      */
-    public function index(Request $request)
+    public function index()
     {
-        $perPage = $request->query('per_page', 10); // Default 10 item per halaman
-        $pendidikan = Pendidikan::orderBy('nama_pendidikan', 'asc')->paginate($perPage);
-
+        $pendidikan = Pendidikan::orderBy('nama_pendidikan', 'asc')->get();
         return PendidikanResource::collection($pendidikan);
     }
 

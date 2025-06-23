@@ -15,14 +15,11 @@ class PelatihanController extends Controller
      * Menampilkan daftar semua pelatihan (publik).
      * GET /api/pelatihan
      */
-    public function index(Request $request)
+    public function index()
     {
-        $perPage = $request->query('per_page', 10);
-        // Eager load relasi mentor dan admin (jika admin ingin ditampilkan)
-        $pelatihan = Pelatihan::with(['mentor', 'admin.user']) 
-                               ->latest()
-                               ->paginate($perPage);
-
+        $pelatihan = Pelatihan::with(['mentor', 'admin.user'])
+            ->latest()
+            ->get();
         return PelatihanResource::collection($pelatihan);
     }
 

@@ -18,13 +18,9 @@ class LaporanAdminController extends Controller
      * Menampilkan daftar semua laporan admin (untuk Ketua).
      * GET /api/laporan-admin
      */
-    public function index(Request $request)
+    public function index()
     {
-        // Pastikan Anda memiliki LaporanAdminPolicy dengan metode viewAny
-        // $this->authorize('viewAny', LaporanAdmin::class); 
-
-        $perPage = $request->query('per_page', 10);
-        $laporan = LaporanAdmin::with('admin.user')->latest()->paginate($perPage);
+        $laporan = LaporanAdmin::with('admin.user')->latest()->get();
         return LaporanAdminResource::collection($laporan);
     }
 

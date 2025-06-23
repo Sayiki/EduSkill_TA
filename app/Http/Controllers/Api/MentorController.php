@@ -14,11 +14,9 @@ class MentorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
-        $perPage = $request->query('per_page', 10);
-        $mentors = Mentor::latest()->paginate($perPage);
-
+        $mentors = Mentor::latest()->get();
         return MentorResource::collection($mentors);
     }
 

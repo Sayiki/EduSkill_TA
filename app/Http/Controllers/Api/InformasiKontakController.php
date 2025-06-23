@@ -17,12 +17,7 @@ class InformasiKontakController extends Controller
      */
     public function index(Request $request)
     {
-        // Jika Anda hanya punya satu set informasi kontak, gunakan first()
-        // $kontak = InformasiKontak::latest()->first(); // Mengambil yang terbaru
-        // return $kontak ? new InformasiKontakResource($kontak) : response()->json(['data' => null]);
-
-        // Jika bisa ada beberapa, gunakan paginasi atau get()
-        $kontak = InformasiKontak::latest()->get(); // Mengambil semua, diurutkan terbaru
+        $kontak = InformasiKontak::latest()->get(); 
         return InformasiKontakResource::collection($kontak);
     }
 

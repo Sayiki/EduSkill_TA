@@ -8,14 +8,12 @@ use App\Models\Admin;
 
 class AdminController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        // you can pass ?per_page=20 in the querystring, default to 10
-        $perPage = $request->query('per_page', 10);
+        
+        $semuaAdmin = Admin::with('user')->get(); 
 
-        $admins = Admin::with('user')->paginate($perPage);
-
-        return response()->json($admins);
+        return response()->json($semuaAdmin);
     }
 
     public function store(Request $request)

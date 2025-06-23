@@ -17,19 +17,17 @@ class NotifikasiController extends Controller
      * Menampilkan notifikasi untuk peserta yang sedang login.
      * GET /api/notifikasi-saya
      */
-    public function indexForCurrentUser(Request $request)
+    public function indexForCurrentUser() // Request tidak lagi diperlukan
     {
         $user = Auth::user();
-        if (!$user || !$user->peserta) { 
+        if (!$user || !$user->peserta) {
             return response()->json(['message' => 'Profil peserta tidak ditemukan untuk pengguna ini.'], 404);
         }
         $pesertaId = $user->peserta->id;
 
-        $perPage = $request->query('per_page', 10);
         $notifikasi = Notifikasi::where('peserta_id', $pesertaId)
-                                ->latest() 
-                                ->paginate($perPage);
-
+            ->latest()
+            ->get();
         return NotifikasiResource::collection($notifikasi);
     }
 

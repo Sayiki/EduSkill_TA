@@ -88,12 +88,12 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::middleware(['peran:admin'])->group(function(){
 
-        Route::get('/admin', [DaftarPelatihanController::class, 'index']);
-        Route::get('/admin/{id}', [DaftarPelatihanController::class, 'show']);
+        Route::get('/admin', [AdminController::class, 'index']);
+        Route::get('/admin/{id}', [AdminController::class, 'show']);
 
 
-        Route::get('/ketua', [DaftarPelatihanController::class, 'index']);
-        Route::get('/ketua/{id}', [DaftarPelatihanController::class, 'show']);
+        Route::get('/ketua', [KetuaController::class, 'index']);
+        Route::get('/ketua/{id}', [KetuaController::class, 'show']);
         // Daftar Pelatihan
         Route::get('/daftar-pelatihan', [DaftarPelatihanController::class, 'index']);
         Route::put('/daftar-pelatihan/{id}', [DaftarPelatihanController::class, 'update']);
