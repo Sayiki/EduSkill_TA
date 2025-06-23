@@ -14,11 +14,13 @@ class InformasiGaleriController extends Controller
     /**
      * Menampilkan daftar semua item galeri (publik).
      */
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = $request->query('per_page', 12);
         $items = InformasiGaleri::with('admin.user')
-            ->latest()
-            ->get();
+                               ->latest()
+                               ->paginate($perPage);
+
         return InformasiGaleriResource::collection($items);
     }
 

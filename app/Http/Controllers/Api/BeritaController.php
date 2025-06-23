@@ -15,9 +15,11 @@ class BeritaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $berita = Berita::latest()->get(); // Menambahkan latest() untuk konsistensi
+        $perPage = $request->query('per_page', 10);
+        $berita = Berita::paginate($perPage);
+
         return response()->json($berita);
     }
 

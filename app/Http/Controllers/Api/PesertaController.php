@@ -17,12 +17,15 @@ use App\Http\Resources\PesertaPublicResource;
 class PesertaController extends Controller
 {
     // ✅ GET /api/peserta
-    public function index(Request $request)  
+    public function index(Request $request)   // ← inject the Request
     {
-        $semuaPeserta = Peserta::with(['user', 'pendidikan'])
-        ->get(); 
+        // allow client to pass ?per_page=… (default to 15)
+        $perPage = $request->query('per_page', 10);
 
-    return response()->json($semuaPeserta);
+        $paginator = Peserta::with(['user', 'pendidikan'])
+            ->paginate($perPage);
+
+        return response()->json($paginator);
     }
 
     public function store(Request $request)

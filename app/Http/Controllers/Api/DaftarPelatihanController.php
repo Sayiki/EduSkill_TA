@@ -13,11 +13,15 @@ use Illuminate\Validation\Rule;
 
 class DaftarPelatihanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = $request->query('per_page', 10);
+
+        // Eager load relasi yang mungkin dibutuhkan di frontend
         $entries = DaftarPelatihan::with(['peserta.user', 'pelatihan'])
-            ->latest()
-            ->get();
+                                  ->latest() // Urutkan berdasarkan yang terbaru
+                                  ->paginate($perPage);
+
         return response()->json($entries);
     }
 

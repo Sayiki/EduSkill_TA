@@ -12,11 +12,15 @@ use Illuminate\Support\Facades\Auth;
 
 class FeedbackController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $fb = Feedback::with(['peserta.user']) // Menyederhanakan eager loading
-            ->latest()
-            ->get();
+        $perPage = $request->query('per_page', 10);
+
+        $fb = Feedback::with(['peserta' => function ($query) {
+                        $query->with('user');
+                    }])
+                    ->paginate($perPage);
+
         return response()->json($fb);
     }
 
