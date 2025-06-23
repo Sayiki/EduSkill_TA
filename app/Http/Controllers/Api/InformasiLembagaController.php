@@ -16,7 +16,6 @@ class InformasiLembagaController extends Controller
      */
     public function index(Request $request)
     {
-        // Mengambil entri informasi lembaga pertama yang ada, atau null jika tidak ada
         $lembaga = InformasiLembaga::latest()->first(); 
 
         if (!$lembaga) {

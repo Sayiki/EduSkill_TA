@@ -16,7 +16,7 @@ class InformasiGaleriController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->query('per_page', 12);
+        $perPage = $request->query('per_page', 10);
         $items = InformasiGaleri::with('admin.user')
                                ->latest()
                                ->paginate($perPage);

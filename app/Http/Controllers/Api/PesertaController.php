@@ -17,9 +17,8 @@ use App\Http\Resources\PesertaPublicResource;
 class PesertaController extends Controller
 {
     // ✅ GET /api/peserta
-    public function index(Request $request)   // ← inject the Request
+    public function index(Request $request) 
     {
-        // allow client to pass ?per_page=… (default to 15)
         $perPage = $request->query('per_page', 10);
 
         $paginator = Peserta::with(['user', 'pendidikan'])

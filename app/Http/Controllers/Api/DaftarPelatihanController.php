@@ -27,22 +27,18 @@ class DaftarPelatihanController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Registration attempt by User ID: ' . $request->user()->id);
-
+        // 1. Validasi Diubah untuk Menangani File
         $data = $request->validate([
             'pelatihan_id' => 'required|integer|exists:pelatihan,id',
             'nik'          => ['required', 'string', 'digits:16'],
-            'kk'           => 'nullable|string|max:255', // Asumsi ini path file atau teks
-            'ktp'          => 'nullable|string|max:255', // Asumsi ini path file atau teks
-            'ijazah'       => 'nullable|string|max:255', // Asumsi ini path file atau teks
-            'foto'         => 'nullable|string|max:255', // Asumsi ini path file atau teks
+            'kk'           => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10000', 
+            'ktp'          => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10000', 
+            'ijazah'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10000', 
+            'foto'         => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10000', 
         ]);
 
-        $peserta = Peserta::firstOrCreate(
-            ['user_id' => $request->user()->id]
-            // Anda bisa menambahkan data default lain untuk peserta di sini jika perlu
-        );
-
+        // --- Logika untuk memeriksa NIK dan pendaftaran aktif Anda sudah bagus, kita pertahankan ---
+        $peserta = Peserta::firstOrCreate(['user_id' => $request->user()->id]);
         if (empty($peserta->nik_peserta)) {
             $isNikTaken = Peserta::where('nik_peserta', $data['nik'])->where('id', '!=', $peserta->id)->exists();
             if ($isNikTaken) {
@@ -50,35 +46,45 @@ class DaftarPelatihanController extends Controller
             }
             $peserta->nik_peserta = $data['nik'];
             $peserta->save();
-        } 
-        elseif ($peserta->nik_peserta !== $data['nik']) {
-            return response()->json([
-                'message' => 'NIK yang Anda masukkan tidak sesuai dengan data yang sudah terdaftar.',
-            ], 422);
+        } elseif ($peserta->nik_peserta !== $data['nik']) {
+            return response()->json(['message' => 'NIK yang Anda masukkan tidak sesuai dengan data yang sudah terdaftar.'], 422);
         }
         
         $hasActiveRegistration = DaftarPelatihan::where('peserta_id', $peserta->id)
-                                              ->whereIn('status', ['ditinjau', 'diterima'])
-                                              ->exists();
-
+                                                ->whereIn('status', ['ditinjau', 'diterima'])
+                                                ->exists();
         if ($hasActiveRegistration) {
-            return response()->json([
-                'message' => 'Anda sudah memiliki pendaftaran yang sedang ditinjau atau sudah diterima. Anda tidak dapat mendaftar lagi saat ini.'
-            ], 409); 
+            return response()->json(['message' => 'Anda sudah memiliki pendaftaran yang sedang ditinjau atau sudah diterima.'], 409); 
         }
+        // --- Akhir dari logika yang dipertahankan ---
 
+
+        // 2. Proses Penyimpanan File
         $entryData = [
             'peserta_id'   => $peserta->id,
             'pelatihan_id' => $data['pelatihan_id'],
-            'kk'           => $data['kk'] ?? null,
-            'ktp'          => $data['ktp'] ?? null,
-            'ijazah'       => $data['ijazah'] ?? null,
-            'foto'         => $data['foto'] ?? null,
             'status'       => 'ditinjau',
         ];
+
+        // Cek dan simpan setiap file jika ada
+        if ($request->hasFile('kk')) {
+            // Simpan file ke storage/app/public/dokumen_peserta dan dapatkan path-nya
+            $entryData['kk'] = $request->file('kk')->store('dokumen_peserta', 'public');
+        }
+        if ($request->hasFile('ktp')) {
+            $entryData['ktp'] = $request->file('ktp')->store('dokumen_peserta', 'public');
+        }
+        if ($request->hasFile('ijazah')) {
+            $entryData['ijazah'] = $request->file('ijazah')->store('dokumen_peserta', 'public');
+        }
+        if ($request->hasFile('foto')) {
+            $entryData['foto'] = $request->file('foto')->store('dokumen_peserta', 'public');
+        }
         
+        // 3. Buat Entri di Database dengan Path File
         $entry = DaftarPelatihan::create($entryData);
 
+        // Kembalikan respons yang benar (201 Created)
         return response()->json($entry->load(['peserta.user', 'pelatihan']), 201);
     }
 
