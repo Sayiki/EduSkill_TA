@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // 10 Peserta
-        User::factory()->count(9)->peserta()->create()->each(function ($user) {
+        User::factory()->count(60)->peserta()->create()->each(function ($user) {
             Peserta::factory()->create([
                 'user_id' => $user->id,
                 'pendidikan_id' => Pendidikan::inRandomOrder()->value('id'),

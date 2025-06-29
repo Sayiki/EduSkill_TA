@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Str;
 
+
 class Peserta extends Model
 {
     use HasFactory;
@@ -37,6 +38,12 @@ class Peserta extends Model
         return $this->belongsTo(Pendidikan::class, 'pendidikan_id');
     }
 
+    // Relasi ke model DaftarPelatihan (satu peserta dapat memiliki banyak pendaftaran pelatihan)
+    public function daftar_pelatihan()
+    {
+        return $this->hasMany(DaftarPelatihan::class, 'peserta_id'); // Sesuaikan foreign key jika berbeda
+    }
+    
     public function feedback()
     {
         return $this->hasOne(Feedback::class, 'peserta_id');

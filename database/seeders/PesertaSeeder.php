@@ -17,7 +17,7 @@ class PesertaSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->count(10)->state(['peran' => 'peserta'])->create()->each(function ($user) {
+        User::factory()->count(50)->state(['peran' => 'peserta'])->create()->each(function ($user) {
             Peserta::factory()->create([
                 'user_id' => $user->id,
                 'pendidikan_id' => Pendidikan::inRandomOrder()->first()->id,

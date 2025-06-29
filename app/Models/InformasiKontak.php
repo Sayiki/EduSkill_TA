@@ -10,7 +10,7 @@ class InformasiKontak extends Model
 {
     use HasFactory;
     protected $table = 'informasi_kontak';
-    protected $fillable = ['alamat', 'email', 'telepon', 'admin_id'];
+    protected $fillable = ['alamat', 'email', 'telepon', 'admin_id','whatsapp','instagram','admin_id',];
 
     public function admin()
     {

@@ -10,7 +10,6 @@ use App\Models\User;
 use App\Models\Peserta;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rules\Password;
 
 
 class AuthController extends Controller
@@ -28,17 +27,20 @@ class AuthController extends Controller
             return response()->json(['error' => 'Username atau password salah.'], 401);
         }
 
-
+        // --- REVISED TOKEN GENERATION ---
+        // Add the 'peran' as a custom claim into the token itself.
         $customClaims = ['peran' => $user->peran];
 
-
+        // Generate the token with the custom claims for the user.
         $token = JWTAuth::customClaims($customClaims)->fromUser($user);
 
-
+        // Eager load the specific profile based on the user's 'peran'
+        // This attaches the Peserta, Admin, or Ketua details to the user object.
         if ($user->peran && in_array($user->peran, ['peserta', 'admin', 'ketua'])) {
             $user->load($user->peran);
         }
 
+        // Return a single, consistent response for all roles.
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
@@ -77,14 +79,8 @@ class AuthController extends Controller
                 'email' => 'required|email|unique:users,email',
                 'username' => 'required|string|unique:users,username',
                 'name' => 'required|string',
-                'nomor_telp' => 'required|string|min:8|max:12',
-                'password' => ['required', 'confirmed',
-                    Password::min(8)
-                        ->letters()
-                        ->mixedCase()
-                        ->numbers()
-                        ->symbols()
-                ],
+                'nomor_telp' => 'required|string',
+                'password' => 'required|string|min:6|confirmed',
             ]);
 
             $user = User::create([
@@ -118,15 +114,26 @@ class AuthController extends Controller
         }
     }
 
-    public function refresh()
+    public function user() 
     {
-        // This will automatically invalidate the old token and return a new one.
-        // The refresh token is sent via the Authorization header.
-        return response()->json([
-            'access_token' => auth()->refresh(),
-            'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60,
-        ]);
-    }
+        // Memastikan user sudah terautentikasi
+        if (!Auth::check()) {
+            // Ini akan log jika user tidak terautentikasi, membantu debugging token
+            \Log::warning('AuthController@user: User tidak terautentikasi.');
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
 
+        // Ambil user yang sedang login
+        $user = Auth::user();
+
+        // Eager load relasi 'peserta' jika user adalah peserta
+        if ($user->peran === 'peserta') {
+            $user->load('peserta');
+        }
+
+        // Kembalikan data user dalam format JSON.
+        return response()->json([
+            'user' => $user
+        ], 200);
+    }
 }

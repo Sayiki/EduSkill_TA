@@ -1,10 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 use App\Http\Controllers\Api\{
     AdminController,
@@ -28,150 +25,110 @@ use App\Http\Controllers\Api\{
     BannerController,
     SlideshowController,
     MentorController,
+    FileController,
+    ProfilePesertaController, // Pastikan ini diimpor jika digunakan di rute peserta
 };
 
-Route::post('/login',  [AuthController::class, 'login']);
+// --- Rute Autentikasi Publik (Tidak memerlukan JWT) ---
+Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout']);
 
-Route::get('/berita', [BeritaController::class, 'index']);
-Route::get('/berita/{id}', [BeritaController::class, 'show']);
+// --- Rute API Publik (Hanya GET untuk tampilan, tidak memerlukan JWT) ---
+Route::apiResource('profile-lkp', ProfileLKPController::class)->only(['index', 'show']);
+Route::apiResource('profile-lpk', ProfileLPKController::class)->only(['index', 'show']);
+Route::apiResource('profile-yayasan', ProfileYayasanController::class)->only(['index', 'show']);
 
-Route::get('/banner', [BannerController::class, 'index']);
-Route::get('/banner/{id}', [BannerController::class, 'show']);
-
-Route::get('/slideshow', [SlideshowController::class, 'index']);
-Route::get('/slideshow/{id}', [SlideshowController::class, 'show']);
-
-Route::get('/mentor', [MentorController::class, 'index']);
-Route::get('/mentor/{id}', [MentorController::class, 'show']);
-
-Route::get('/informasi-galeri', [InformasiGaleriController::class, 'index']);
-Route::get('/informasi-galeri/{id}', [InformasiGaleriController::class, 'show']);
-
-Route::get('/informasi-kontak', [InformasiKontakController::class, 'index']);
-
-Route::get('/informasi-lembaga', [InformasiLembagaController::class, 'index']);
+Route::apiResource('berita', BeritaController::class)->only(['index', 'show']);
+Route::apiResource('banner', BannerController::class)->only(['index', 'show']);
+Route::apiResource('feedback', FeedbackController::class)->only(['index', 'show']);
+Route::apiResource('slideshow', SlideshowController::class)->only(['index', 'show']);
+Route::apiResource('mentor', MentorController::class)->only(['index', 'show']);
+Route::apiResource('informasi-galeri', InformasiGaleriController::class)->only(['index', 'show']);
+Route::apiResource('informasi-kontak', InformasiKontakController::class)->only(['index']);
+Route::apiResource('informasi-lembaga', InformasiLembagaController::class)->only(['index']);
 
 Route::get('/pelatihan', [PelatihanController::class, 'index']);
 Route::get('/pelatihan/{id}', [PelatihanController::class, 'show']);
 
-Route::get('/pendidikan', [PendidikanController::class, 'index']);
-Route::get('/pendidikan/{id}', [PendidikanController::class, 'show'])->where('id', '[0-9]+');
+Route::apiResource('pendidikan', PendidikanController::class)->only(['index', 'show']);
 
-Route::get('/profile-yayasan', [ProfileYayasanController::class, 'index']);
-
-Route::get('/profile-lkp', [ProfileLKPController::class, 'index']);
-
-Route::get('/profile-lpk', [ProfileLPKController::class, 'index']);
-
-Route::get('/peserta-alumni', [PesertaController::class, 'getPublicProfiles']);
+Route::get('/peserta', [PesertaController::class, 'index']);
+Route::get('/peserta/{id}', [PesertaController::class, 'show']);
 
 
+// --- Rute API Terproteksi (Memerlukan JWT Token) ---
+Route::middleware(['jwt.auth'])->group(function(){
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'user']); // Rute untuk mendapatkan detail user yang sedang login
 
-Route::middleware(['jwt.auth'])->group(function () {
-
-    Route::post('refresh', [AuthController::class, 'refresh']);
-    
+    // --- Rute Khusus Peran Peserta (Memerlukan JWT Token DAN peran 'peserta') ---
     Route::middleware(['peran:peserta'])->group(function () {
-        Route::post('/daftar-pelatihan', [DaftarPelatihanController::class, 'store']);
-        Route::get('/profil-saya', [PesertaController::class, 'showMyProfile']);
+        Route::get('daftar-pelatihan/current-user', [DaftarPelatihanController::class, 'indexForCurrentUser']);      
+        Route::post('/daftar-pelatihan', [DaftarPelatihanController::class, 'store']); 
+        Route::put('/profile-peserta/{peserta}', [ProfilePesertaController::class, 'update']);
+        Route::post('/feedback', [FeedbackController::class, 'store']);
+        // Route::get('/peserta/{id}', [PesertaController::class, 'show']); // Sudah dihandle di apiResource publik di atas
         Route::put('/peserta/{id}', [PesertaController::class, 'update']);
-        Route::post('/feedback/{id}', [FeedbackController::class, 'store']);
         Route::get('/notifikasi-saya', [NotifikasiController::class, 'indexForCurrentUser']);
         Route::get('/notifikasi-saya/{id}', [NotifikasiController::class, 'showForCurrentUser']);
         Route::put('/notifikasi-saya/{id}', [NotifikasiController::class, 'updateStatusForCurrentUser']);
         Route::delete('/notifikasi-saya/{id}', [NotifikasiController::class, 'destroyForCurrentUser']);
-            
     });
 
-
+    // --- Rute Khusus Peran Admin (Memerlukan JWT Token DAN peran 'admin') ---
     Route::middleware(['peran:admin'])->group(function(){
+        Route::apiResource('admin', AdminController::class);
+        Route::apiResource('ketua', KetuaController::class);
 
-        Route::get('/admin', [DaftarPelatihanController::class, 'index']);
-        Route::get('/admin/{id}', [DaftarPelatihanController::class, 'show']);
+        Route::apiResource('profile-yayasan', ProfileYayasanController::class)->except(['index', 'show']);
+        Route::apiResource('profile-lkp', ProfileLKPController::class)->except(['index', 'show']);
+        Route::apiResource('profile-lpk', ProfileLPKController::class)->except(['index', 'show']);
 
+        Route::apiResource('berita', BeritaController::class)->except(['index', 'show']);
+        Route::apiResource('banner', BannerController::class)->except(['index', 'show']);
+        Route::apiResource('slideshow', SlideshowController::class)->except(['index', 'show']);
+        Route::apiResource('mentor', MentorController::class)->except(['index', 'show']);
+        Route::apiResource('informasi-galeri', InformasiGaleriController::class)->except(['index', 'show']);
+        Route::apiResource('informasi-kontak', InformasiKontakController::class)->except(['index', 'show']);
+        Route::apiResource('informasi-lembaga', InformasiLembagaController::class)->except(['index', 'show']);
+        // Pelatihan
+        Route::post('/pelatihan', [PelatihanController::class, 'store']);
+        Route::put('/pelatihan/{id}', [PelatihanController::class, 'update']);
+        Route::delete('/pelatihan/{id}', [PelatihanController::class, 'destroy']);
 
-        Route::get('/ketua', [DaftarPelatihanController::class, 'index']);
-        Route::get('/ketua/{id}', [DaftarPelatihanController::class, 'show']);
-        // Daftar Pelatihan
+        Route::apiResource('pendidikan', PendidikanController::class)->except(['index', 'show']);
+        Route::apiResource('feedback', FeedbackController::class)->except(['index', 'show', 'store']);
+
         Route::get('/daftar-pelatihan', [DaftarPelatihanController::class, 'index']);
         Route::put('/daftar-pelatihan/{id}', [DaftarPelatihanController::class, 'update']);
         Route::get('/daftar-pelatihan/{id}', [DaftarPelatihanController::class, 'show']);
         Route::delete('/daftar-pelatihan/{id}', [DaftarPelatihanController::class, 'destroy']);
-
-        // Peserta
-        Route::get('/peserta', [PesertaController::class, 'index']);
-        Route::get('/peserta/{id}', [PesertaController::class, 'show']);
+        
+        Route::post('/peserta/{id}', [PesertaController::class, 'store']);
+        Route::put('/peserta/{id}', [PesertaController::class, 'update']);
         Route::delete('/peserta/{id}', [PesertaController::class, 'destroy']);
 
-        // Feedback
-        Route::get('/feedback', [FeedbackController::class, 'index']);
-        Route::put('/feedback/{id}', [PesertaController::class, 'update']);
-        Route::delete('/feedback/{id}', [FeedbackController::class, 'destroy']);
-        Route::get('/feedback/{id}', [FeedbackController::class, 'show']);
+        Route::apiResource('laporan-admin', LaporanAdminController::class)->only(['index', 'show', 'destroy']);
+        Route::post('/my-laporan-admin', [LaporanAdminController::class, 'storeOrUpdateMyLaporan']);
+        Route::get('/my-laporan-admin', [LaporanAdminController::class, 'showMyLaporan']);
+        Route::post('/notifikasi-pengumuman', [NotifikasiController::class, 'sendAnnouncementToAllPeserta']);
+        Route::apiResource('notifikasi', NotifikasiController::class)->except(['index', 'show', 'store']);
 
-        // Berita
-        Route::post('/berita', [BeritaController::class, 'store']);
-        Route::put('/berita/{id}', [BeritaController::class, 'update']);
-        Route::delete('/berita/{id}', [BeritaController::class, 'destroy']);
-
-        // Banner
-        Route::post('/banner', [BannerController::class, 'store']);
-        Route::put('/banner/{id}', [BannerController::class, 'update']); 
-        Route::delete('/banner/{id}', [BannerController::class, 'destroy']);
-
-        // Slideshow
-        Route::post('/slideshow', [SlideshowController::class, 'store']);
-        Route::put('/slideshow/{id}', [SlideshowController::class, 'update']); 
-        Route::delete('/slideshow/{id}', [SlideshowController::class, 'destroy']);
+        Route::post('/informasi-lembaga', [InformasiLembagaController::class, 'store']);
+        Route::put('/informasi-lembaga/{id}', [InformasiLembagaController::class, 'update']);
 
         // Mentor
         Route::post('/mentor', [MentorController::class, 'store']);
         Route::put('/mentor/{id}', [MentorController::class, 'update']); 
         Route::delete('/mentor/{id}', [MentorController::class, 'destroy']);
 
-        // Informasi Galeri
-        Route::post('/informasi-galeri', [InformasiGaleriController::class, 'store']);
-        Route::put('/informasi-galeri/{id}', [InformasiGaleriController::class, 'update']);
-        Route::delete('/informasi-galeri/{id}', [InformasiGaleriController::class, 'destroy']);
+        Route::get('/documents/{filename}', [FileController::class, 'downloadDocument']);
+    });
 
-        // Informasi Kontak
-        Route::post('/informasi-kontak', [InformasiKontakController::class, 'store']);
-
-        // Informasi Lembaga
-        Route::post('/informasi-lembaga', [InformasiLembagaController::class, 'store']);
-
-        // Laporan Admin
-        Route::post('/my-laporan-admin', [LaporanAdminController::class, 'storeOrUpdateMyLaporan']);
-        Route::get('/my-laporan-admin', [LaporanAdminController::class, 'showMyLaporan']);
-
-        // Notifikasi announcement
-        Route::post('/notifikasi-pengumuman', [NotifikasiController::class, 'sendAnnouncementToAllPeserta']);
-
-        // Pelatihan
-        Route::post('/pelatihan', [PelatihanController::class, 'store']);
-        Route::put('/pelatihan/{id}', [PelatihanController::class, 'update']);
-        Route::delete('/pelatihan/{id}', [PelatihanController::class, 'destroy']);
-
-        // Pendidikan
-        Route::post('/pendidikan', [PendidikanController::class, 'store']);
-        Route::put('/pendidikan/{id}', [PendidikanController::class, 'update']);
-        Route::delete('/pendidikan/{id}', [PendidikanController::class, 'destroy']);
-
-        // Profile Entitas Tunggal
-        Route::post('/profile-yayasan', [ProfileYayasanController::class, 'store']);
-        Route::post('/profile-lkp', [ProfileLKPController::class, 'store']);
-        Route::post('/profile-lpk', [ProfileLPKController::class, 'store']);
-    });  
-
-    Route::middleware(['jwt.auth', 'peran:ketua'])->group(function () {
+    // --- Rute Khusus Peran Ketua (Memerlukan JWT Token DAN peran 'ketua') ---
+    Route::middleware(['peran:ketua'])->group(function () {
         Route::get('/laporan-admin', [LaporanAdminController::class, 'index']);
         Route::get('/laporan-admin/{id}', [LaporanAdminController::class, 'showLaporanByIdForKetua']);
         Route::delete('/laporan-admin/{id}', [LaporanAdminController::class, 'destroy']);
     });
-
 });
-
-
-

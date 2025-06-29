@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\InformasiKontak;
-use App\Models\Admin; // Pastikan di-import
+use App\Models\Admin;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule; // Untuk validasi
-use App\Http\Resources\InformasiKontakResource; // Import resource
+use Illuminate\Validation\Rule;
+use App\Http\Resources\InformasiKontakResource;
 
 class InformasiKontakController extends Controller
 {
@@ -17,20 +17,30 @@ class InformasiKontakController extends Controller
      */
     public function index(Request $request)
     {
+        // Karena biasanya hanya ada satu entri, kita bisa langsung ambil yang pertama
+        // atau yang terakhir dibuat, tergantung kebutuhan.
+        // Untuk ContactInfo, kita hanya butuh 1.
+        $kontak = InformasiKontak::latest()->first(); // Ambil record terbaru (asumsi 1 record utama)
 
-        $kontak = InformasiKontak::latest()->get(); 
-        return InformasiKontakResource::collection($kontak);
+        if (!$kontak) {
+            return response()->json(['message' => 'Informasi kontak belum tersedia'], 404);
+        }
+        // Gunakan resource untuk memformat single item
+        return new InformasiKontakResource($kontak); // Mengembalikan single resource
     }
 
     /**
      * Menyimpan informasi kontak baru (hanya Admin).
+     * Metode ini juga berfungsi sebagai update jika record sudah ada.
      */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'alamat'  => 'required|string|max:1000',
-            'email'   => 'required|email|max:255',
-            'telepon' => 'required|string|max:50',
+            'alamat'    => 'required|string|max:1000',
+            'email'     => ['required', 'email', 'max:255', Rule::unique('informasi_kontak')->ignore(InformasiKontak::first()->id ?? null)], // Unique rule for email
+            'telepon'   => 'required|string|max:50',
+            'whatsapp'  => 'nullable|string|max:50', // BARU: Tambah validasi
+            'instagram' => 'nullable|string|max:255', // BARU: Tambah validasi
         ]);
 
         $loggedInUser = $request->user();
@@ -38,29 +48,25 @@ class InformasiKontakController extends Controller
              return response()->json(['message' => 'Akses ditolak atau profil admin tidak ditemukan.'], 403);
         }
         $admin = $loggedInUser->adminProfile;
-        
-        // Coba cari apakah sudah ada entri kontak
+
+        // Coba cari apakah sudah ada entri kontak. Asumsi hanya ada SATU record utama.
         $kontak = InformasiKontak::first();
 
         if ($kontak) {
             // Jika sudah ada, UPDATE entri yang ada
             $kontak->update($validatedData);
-            // Anda mungkin ingin mencatat admin_id yang melakukan update jika berbeda
-            // $kontak->admin_id = $admin->id; // Jika ingin melacak editor terakhir
-            // $kontak->save();
         } else {
             // Jika belum ada, CREATE entri baru
             $validatedData['admin_id'] = $admin->id;
             $kontak = InformasiKontak::create($validatedData);
         }
 
-        return new InformasiKontakResource($kontak->fresh()); // Gunakan fresh() untuk data terbaru
+        return new InformasiKontakResource($kontak->fresh());
     }
 
     /**
      * Menampilkan detail informasi kontak spesifik (publik).
-     * Endpoint ini mungkin tidak terlalu berguna jika Anda hanya punya satu set info kontak.
-     * Lebih umum mengambil semua via index() dan frontend memilih yang ditampilkan.
+     * (Tidak diubah, tapi tidak relevan untuk ContactInfo.jsx karena kita ambil yang pertama)
      */
     public function show($id)
     {
@@ -73,19 +79,21 @@ class InformasiKontakController extends Controller
 
     /**
      * Memperbarui informasi kontak yang ada (hanya Admin).
+     * Disarankan untuk menggunakan `store` untuk logic upsert (create/update first)
+     * jika Anda hanya memiliki satu record. Jika tidak, $id harus selalu spesifik.
      */
-    public function update(Request $request, $id) // $id di sini mungkin tidak relevan jika hanya ada 1 record
+    public function update(Request $request, $id)
     {
-        // Ambil satu-satunya record kontak, atau record dengan ID spesifik jika Anda mengizinkan >1
-        $kontak = InformasiKontak::firstOrFail(); // Mengambil yang pertama, atau gagal jika tidak ada
-        // Atau jika Anda tetap menggunakan $id:
-        // $kontak = InformasiKontak::findOrFail($id);
+        // Mengambil record dengan ID spesifik, atau yang pertama jika $id tidak digunakan (hati-hati)
+        $kontak = InformasiKontak::findOrFail($id); // Gunakan $id yang masuk dari route
 
 
         $validatedData = $request->validate([
-            'alamat'  => 'sometimes|required|string|max:1000',
-            'email'   => ['sometimes', 'required', 'email', 'max:255', Rule::unique('informasi_kontak')->ignore($kontak->id)],
-            'telepon' => 'sometimes|required|string|max:50',
+            'alamat'    => 'sometimes|required|string|max:1000',
+            'email'     => ['sometimes', 'required', 'email', 'max:255', Rule::unique('informasi_kontak')->ignore($kontak->id)],
+            'telepon'   => 'sometimes|required|string|max:50',
+            'whatsapp'  => 'sometimes|nullable|string|max:50', // BARU: Tambah validasi
+            'instagram' => 'sometimes|nullable|string|max:255', // BARU: Tambah validasi
         ]);
 
         $kontak->update($validatedData);
@@ -95,17 +103,12 @@ class InformasiKontakController extends Controller
 
     /**
      * Menghapus informasi kontak (hanya Admin).
-     * Hati-hati menggunakan ini jika Anda hanya ingin ada satu set info kontak.
-     * Mungkin lebih baik hanya ada fitur update.
+     * (Tidak diubah, tapi hati-hati menghapus satu-satunya record)
      */
     public function destroy($id)
     {
         $kontak = InformasiKontak::findOrFail($id);
-        
-        // Otorisasi tambahan jika perlu (misalnya, hanya super admin)
-        
         $kontak->delete();
-
         return response()->json(['message' => 'Informasi kontak berhasil dihapus'], 200);
     }
 }

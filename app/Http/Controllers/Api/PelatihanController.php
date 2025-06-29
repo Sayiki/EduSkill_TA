@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pelatihan;
-use App\Models\Admin; // Pastikan model Admin di-import
+use App\Models\Admin;
+use App\Models\DaftarPelatihan; // Import DaftarPelatihan model
+use App\Models\Peserta; // Import Peserta model
 use Illuminate\Http\Request;
-use App\Http\Resources\PelatihanResource; // Import resource
+use App\Http\Resources\PelatihanResource;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB; // Import DB facade for transactions
+use Illuminate\Support\Facades\Log; // Optional: for logging
 
 class PelatihanController extends Controller
 {
@@ -18,12 +22,27 @@ class PelatihanController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->query('per_page', 10);
-        // Eager load relasi mentor dan admin (jika admin ingin ditampilkan)
-        $pelatihan = Pelatihan::with(['mentor', 'admin.user']) 
-                               ->latest()
-                               ->paginate($perPage);
+        $searchQuery = $request->query('search');
+        $statusFilter = $request->query('status_pelatihan');
+        $postStatusFilter = $request->query('post_status');
 
-        return PelatihanResource::collection($pelatihan);
+        $query = Pelatihan::with(['mentor', 'admin.user']);
+
+        if ($searchQuery) {
+            $query->where('nama_pelatihan', 'like', '%' . $searchQuery . '%');
+        }
+
+        if ($statusFilter && $statusFilter !== 'Semua') {
+            $query->where('status_pelatihan', $statusFilter);
+        }
+
+        if ($postStatusFilter && $postStatusFilter !== 'Semua') {
+            $query->where('post_status', $postStatusFilter);
+        }
+
+        $paginator = $query->paginate($perPage);
+
+        return response()->json($paginator);
     }
 
     /**
@@ -40,6 +59,8 @@ class PelatihanController extends Controller
             'jumlah_kuota'         => 'required|integer|min:1',
             'waktu_pengumpulan'    => 'required|date_format:Y-m-d H:i:s',
             'mentor_id'            => 'nullable|integer|exists:mentor,id',
+            'status_pelatihan'     => ['sometimes', Rule::in(['Belum Dimulai', 'Sedang berlangsung', 'Selesai'])],
+            'post_status'          => ['sometimes', Rule::in(['Draft', 'Published'])],
         ]);
 
         $loggedInUser = $request->user();
@@ -48,7 +69,14 @@ class PelatihanController extends Controller
         }
         $admin = $loggedInUser->adminProfile;
         $validatedData['admin_id'] = $admin->id;
-        $validatedData['jumlah_peserta'] = 0; // Default jumlah peserta awal
+        $validatedData['jumlah_peserta'] = 0;
+
+        if (!isset($validatedData['status_pelatihan'])) {
+            $validatedData['status_pelatihan'] = 'Belum Dimulai';
+        }
+        if (!isset($validatedData['post_status'])) {
+            $validatedData['post_status'] = 'Draft';
+        }
 
         $pelatihan = Pelatihan::create($validatedData);
 
@@ -77,19 +105,39 @@ class PelatihanController extends Controller
         $pelatihan = Pelatihan::findOrFail($id);
 
         $validatedData = $request->validate([
-            'nama_pelatihan'       => 'required|string|max:100',
-            'keterangan_pelatihan' => 'required|string|max:350',
-            'kategori'             => 'required|string|max:100',
-            'biaya'                => 'required|string',
-            'jumlah_kuota'         => 'required|integer|min:1',
-            'waktu_pengumpulan'    => 'required|date_format:Y-m-d H:i:s',
-            'mentor_id'            => 'nullable|integer|exists:mentor,id',
+            'nama_pelatihan'       => 'sometimes|required|string|max:100',
+            'keterangan_pelatihan' => 'sometimes|required|string|max:350',
+            'kategori'             => 'sometimes|required|string|max:100',
+            'biaya'                => 'sometimes|required|string',
+            'jumlah_kuota'         => 'sometimes|required|integer|min:1',
+            'waktu_pengumpulan'    => 'sometimes|required|date_format:Y-m-d H:i:s',
+            'mentor_id'            => 'sometimes|nullable|integer|exists:mentor,id',
+            'status_pelatihan'     => ['sometimes', 'required', Rule::in(['Belum Dimulai', 'Sedang berlangsung', 'Selesai'])],
+            'post_status'          => ['sometimes', 'required', Rule::in(['Draft', 'Published'])],
         ]);
 
-        // admin_id (pembuat asli) tidak diubah saat update.
-        // jumlah_peserta diupdate oleh sistem saat pendaftaran diterima/dibatalkan.
+        // Capture the old status before updating
+        $oldStatusPelatihan = $pelatihan->status_pelatihan;
 
-        $pelatihan->update($validatedData);
+        DB::transaction(function () use ($pelatihan, $validatedData, $oldStatusPelatihan) {
+            $pelatihan->update($validatedData);
+
+            // Check if status_pelatihan was changed to 'Selesai'
+            if (isset($validatedData['status_pelatihan']) && $validatedData['status_pelatihan'] === 'Selesai' && $oldStatusPelatihan !== 'Selesai') {
+                // Get all accepted participants for this training
+                $acceptedParticipantIds = DaftarPelatihan::where('pelatihan_id', $pelatihan->id)
+                                                         ->where('status', 'diterima')
+                                                         ->pluck('peserta_id');
+
+                if ($acceptedParticipantIds->isNotEmpty()) {
+                    // Update their status_lulus to 'Lulus'
+                    Peserta::whereIn('id', $acceptedParticipantIds)
+                           ->update(['status_lulus' => 'Lulus']);
+                    Log::info("PelatihanController: Updated status_lulus to 'Lulus' for participants of Pelatihan ID: {$pelatihan->id}"); // Optional logging
+                }
+            }
+        });
+
 
         return new PelatihanResource($pelatihan->fresh()->load(['mentor', 'admin.user']));
     }
@@ -101,11 +149,7 @@ class PelatihanController extends Controller
     public function destroy($id)
     {
         $pelatihan = Pelatihan::findOrFail($id);
-        
-        // Pertimbangkan apa yang terjadi dengan pendaftaran terkait jika pelatihan dihapus.
-        // onDelete('cascade') pada tabel daftar_pelatihan.id_pelatihan akan menghapus semua pendaftaran.
-        // Jika ada peserta yang sudah diterima, mungkin perlu logika tambahan.
-        
+
         $pelatihan->delete();
 
         return response()->json(['message' => 'Pelatihan berhasil dihapus'], 200);

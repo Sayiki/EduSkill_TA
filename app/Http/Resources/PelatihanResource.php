@@ -18,12 +18,19 @@ class PelatihanResource extends JsonResource
             'id' => $this->id,
             'nama_pelatihan' => $this->nama_pelatihan,
             'keterangan_pelatihan' => $this->keterangan_pelatihan,
+            'kategori' => $this->kategori, // Added for frontend
+            'biaya' => $this->biaya, // Added for frontend
             'jumlah_kuota' => $this->jumlah_kuota,
-            'peserta_terdaftar' => $this->jumlah_peserta, // Jumlah peserta yang sudah diterima
-            'sisa_kuota' => $this->jumlah_kuota - $this->jumlah_peserta,
-            'deadline_pendaftaran' => $this->waktu_pengumpulan ? $this->waktu_pengumpulan->format('d M Y H:i') : null,
-            'mentor_pelatihan' => new MentorResource($this->whenLoaded('mentor')), // Menampilkan info mentor
-            'tanggal_dibuat' => $this->created_at->format('d M Y'),
+            'jumlah_peserta' => $this->jumlah_peserta, // Used for 'jumlah_peserta' in frontend
+            // Ensure waktu_pengumpulan is formatted to be easily consumed by JavaScript's Date or direct datetime-local input
+            'waktu_pengumpulan' => $this->waktu_pengumpulan ? $this->waktu_pengumpulan->format('Y-m-d H:i:s') : null,
+            'mentor_id' => $this->mentor_id, // Added for frontend mentor dropdown selection
+            'status_pelatihan' => $this->status_pelatihan, // Added for frontend
+            'post_status' => $this->post_status, // Added for frontend
+            'created_at' => $this->created_at ? $this->created_at->format('Y-m-d H:i:s') : null,
+            'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
+            'mentor' => new MentorResource($this->whenLoaded('mentor')), // Ensure MentorResource exists
+            'admin' => new AdminResource($this->whenLoaded('admin')),   // Ensure AdminResource exists
         ];
     }
 }
