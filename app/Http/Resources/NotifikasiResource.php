@@ -17,6 +17,7 @@ class NotifikasiResource extends JsonResource
         return [
             'id' => $this->id,
             'peserta_id' => $this->id_peserta,
+            'judul' => $this->judul,
             'pesan' => $this->pesan,
             'status' => $this->status, // misal: 'belum dibaca', 'dibaca'
             'dikirim_pada' => $this->created_at->format('d M Y H:i:s'),

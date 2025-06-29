@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('notifikasi', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('peserta_id');
+            $table->string('judul')->nullable();
             $table->text('pesan');
             $table->string('status');
             $table->timestamps();

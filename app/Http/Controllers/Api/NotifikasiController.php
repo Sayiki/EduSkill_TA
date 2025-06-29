@@ -42,6 +42,7 @@ class NotifikasiController extends Controller
         $validatedData = $request->validate([
             'peserta_id' => 'required|integer|exists:peserta,id',
             'pesan'      => 'required|string|max:1000',
+            'judul'      => 'required|string|max:1000',
         ]);
 
         $validatedData['status'] = 'belum dibaca'; 
@@ -59,6 +60,7 @@ class NotifikasiController extends Controller
     public function sendAnnouncementToAllPeserta(Request $request)
     {
         $validatedData = $request->validate([
+            'judul'      => 'required|string|max:1000',
             'pesan'                => 'required|string|max:1000',
             'excluded_peserta_ids' => 'nullable|array', // Array ID peserta yang dikecualikan
             'excluded_peserta_ids.*' => 'integer|exists:peserta,id', // Validasi setiap ID dalam array
@@ -80,6 +82,7 @@ class NotifikasiController extends Controller
         foreach ($targetPesertaIds as $pesertaId) {
             $notificationsData[] = [
                 'peserta_id' => $pesertaId,
+                'judul'      => $judul,
                 'pesan' => $pesan,
                 'status' => 'belum dibaca',
                 'created_at' => $now,
