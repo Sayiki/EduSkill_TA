@@ -19,6 +19,8 @@ class InformasiKontakResource extends JsonResource
             'alamat' => $this->alamat,
             'email' => $this->email,
             'telepon' => $this->telepon,
+            'whatsapp'  => $this->whatsapp, // Tambahkan ini
+            'instagram' => $this->instagram,
             'terakhir_diperbarui' => $this->updated_at->format('d M Y H:i'),
         ];
     }

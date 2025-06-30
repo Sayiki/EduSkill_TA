@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('foto_lkp')->nullable();
             $table->timestamps();
 
-            $table->foreign('lembaga_id')->references('id')->on('informasi_lembaga')->onDelete('cascade');
+            $table->foreign('lembaga_id')->references('id')->on('informasi_lembaga')->onDelete('cascade');;
         });
         
     }

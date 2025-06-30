@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('feedback', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('peserta_id');
+            $table->foreignId('peserta_id')->constrained('peserta')->onDelete('cascade');
+            $table->foreignId('daftar_pelatihan_id')->constrained('daftar_pelatihan')->onDelete('cascade');
             $table->text('comment');
-            $table->string('tempat_kerja',50)->nullable();
+            $table->string('tempat_kerja')->nullable();
+            $table->string('status')->default('Ditinjau');
             $table->timestamps();
-            
-            $table->foreign('peserta_id')->references('id')->on('peserta')->onDelete('cascade');
         });
     }
 

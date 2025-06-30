@@ -13,8 +13,10 @@ class Feedback extends Model
     protected $table = 'feedback';
     protected $fillable = [
         'peserta_id',
+        'daftar_pelatihan_id', // Tambahkan ini
         'comment',
         'tempat_kerja',
+        'status',
     ];
 
     public function peserta()
@@ -22,5 +24,8 @@ class Feedback extends Model
         return $this->belongsTo(Peserta::class, 'peserta_id');
     }
 
-
+    public function daftarPelatihan() // Relasi baru
+    {
+        return $this->belongsTo(DaftarPelatihan::class, 'daftar_pelatihan_id');
+    }
 }

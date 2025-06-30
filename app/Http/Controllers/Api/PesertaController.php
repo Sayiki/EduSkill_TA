@@ -4,15 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\DaftarPelatihan;
 use App\Models\Peserta;
 use App\Models\User;
-use Illuminate\Support\Facades\DB; // Untuk transaksi database
-use Illuminate\Support\Facades\Hash; // Jika ada update password
-use Illuminate\Support\Facades\Storage; // Untuk file upload
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use App\Http\Resources\PesertaPublicResource;
+use Illuminate\Support\Facades\Log;
 
 class PesertaController extends Controller
 {
@@ -20,10 +22,43 @@ class PesertaController extends Controller
     public function index(Request $request) 
     {
         $perPage = $request->query('per_page', 10);
+        $registrationStatus = $request->query('registration_status'); 
+        $searchTerm = $request->query('search'); // <<< AKTIFKAN KEMBALI FILTER SEARCH
+        $pelatihanId = $request->query('pelatihan_id'); // <<< AKTIFKAN KEMBALI FILTER PELATIHAN
 
-        $paginator = Peserta::with(['user', 'pendidikan'])
-            ->paginate($perPage);
+        $query = Peserta::with(['user', 'pendidikan', 'daftar_pelatihan' => function($q_daftar) {
+            $q_daftar->with('pelatihan'); 
+        }]); 
 
+        // Filter: Hanya Peserta yang memiliki setidaknya SATU pendaftaran dengan status 'diterima'
+        if ($registrationStatus === 'diterima') {
+            $query->whereHas('daftar_pelatihan', function (Builder $q_daftar_has) {
+                $q_daftar_has->where('status', 'diterima');
+            });
+        }
+
+        // <<< AKTIFKAN KEMBALI FILTER PELATIHAN DI BACKEND
+        if ($pelatihanId) {
+            $query->whereHas('daftar_pelatihan', function (Builder $q_daftar_has) use ($pelatihanId) {
+                $q_daftar_has->where('pelatihan_id', $pelatihanId)
+                             ->where('status', 'diterima'); // Pastikan ini konsisten dengan filter status
+            });
+        }
+
+        // <<< AKTIFKAN KEMBALI FILTER SEARCH DI BACKEND
+        if ($searchTerm) {
+            $query->whereHas('user', function (Builder $q_user) use ($searchTerm) {
+                $q_user->where('name', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        // Log::info("PesertaController DEBUG: Total items BEFORE pagination and filters: {$query->count()}"); // Opsional, untuk debug
+
+        $paginator = $query->paginate($perPage);
+
+        // Log::info("PesertaController DEBUG: Pagination results - Total: {$paginator->total()}, Last Page: {$paginator->lastPage()}, Next Page URL: " . ($paginator->nextPageUrl() ?? 'NULL')); // Opsional, untuk debug
+
+        // Penting: Pastikan respons JSON sesuai format yang frontend harapkan (root properties)
         return response()->json($paginator);
     }
 
@@ -39,8 +74,7 @@ class PesertaController extends Controller
             'nomor_telp' => ['nullable', 'string', 'max:20'],
             'tanggal_lahir' => ['nullable', 'date'],
             'foto_peserta' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'], // Max 2MB
-            'status_kerja' => ['nullable', Rule::in(['bekerja', 'belum_bekerja', 'kuliah', 'wirausaha', 'tidak_diketahui'])],
-            'peserta_id' => ['nullable', 'integer', 'exists:pendidikan,id'],
+            'pendidikan_id' => ['nullable', 'integer', 'exists:pendidikan,id'], // Perbaikan nama field dari peserta_id
         ]);
 
         if ($request->hasFile('foto_peserta')) {
@@ -76,40 +110,66 @@ class PesertaController extends Controller
 
     public function update(Request $request, $id)
     {
-        $user = Auth::user();
-        // Gunakan firstOrCreate untuk membuat profil peserta jika belum ada
-        $peserta = Peserta::firstOrCreate(['user_id' => $user->id]);
+        $peserta = Peserta::with('user')->find($id); // Ambil peserta dengan user-nya
 
+        if (!$peserta) {
+            return response()->json(['message' => 'Data Peserta tidak ditemukan'], 404);
+        }
+
+        $user = $peserta->user; // Dapatkan objek User terkait
+
+        if (!$user) {
+            return response()->json(['message' => 'User terkait peserta tidak ditemukan.'], 404);
+        }
+        
         // Validasi data yang masuk
         $validatedData = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => ['sometimes', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'nik_peserta' => ['sometimes', 'nullable', 'string', 'digits:16', Rule::unique('peserta')->ignore($peserta->id)],
+            'name' => 'sometimes|string|max:255', // Nama user
+            'email' => ['sometimes', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)], // Email user
+            'nik_peserta' => ['sometimes', 'nullable', 'string', 'digits:16', Rule::unique('peserta', 'nik_peserta')->ignore($peserta->id)],
             'jenis_kelamin' => ['sometimes', 'nullable', Rule::in(['Laki-laki', 'Perempuan'])],
             'alamat_peserta' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'nomor_telp' => ['sometimes', 'nullable', 'string', 'max:20'],
             'tanggal_lahir' => ['sometimes', 'nullable', 'date'],
             'foto_peserta' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
-            'pendidikan_id' => ['sometimes', 'nullable', 'integer', 'exists:pendidikan,id'],
+            'status_kerja' => ['sometimes', 'nullable', Rule::in(['bekerja', 'belum_bekerja', 'kuliah', 'wirausaha', 'tidak_diketahui'])],
+            'pendidikan_id' => ['sometimes', 'nullable', 'integer', 'exists:pendidikan,id'], // Perbaikan nama field dari peserta_id
+            'remove_foto_peserta' => ['sometimes', 'boolean'], // Tambahkan validasi untuk flag hapus foto
         ]);
 
         try {
-            DB::transaction(function () use ($request, $user, $peserta) {
+            DB::transaction(function () use ($request, $user, $peserta, $validatedData) {
                 // 1. Update data di tabel 'users' jika ada
-                $user->update($request->only('name', 'email'));
+                if (isset($validatedData['name'])) { // Cek apakah 'name' ada di validatedData
+                    $user->name = $validatedData['name'];
+                }
+                if (isset($validatedData['email'])) { // Cek apakah 'email' ada di validatedData
+                    $user->email = $validatedData['email'];
+                }
+                $user->save(); // Simpan perubahan pada model User
 
                 // 2. Siapkan data untuk update tabel 'peserta'
-                $pesertaDataToUpdate = $request->except(['name', 'email', 'foto_peserta']);
+                $pesertaDataToUpdate = $request->only([
+                    'nik_peserta', 'jenis_kelamin', 'alamat_peserta', 'nomor_telp',
+                    'tanggal_lahir', 'status_kerja', 'pendidikan_id'
+                ]);
 
                 // Handle upload file untuk foto_peserta
                 if ($request->hasFile('foto_peserta')) {
+                    // Hapus foto lama jika ada
                     if ($peserta->foto_peserta && Storage::disk('public')->exists($peserta->foto_peserta)) {
                         Storage::disk('public')->delete($peserta->foto_peserta);
                     }
                     $path = $request->file('foto_peserta')->store('foto_profil_peserta', 'public');
                     $pesertaDataToUpdate['foto_peserta'] = $path;
+                } elseif ($request->input('remove_foto_peserta') && $peserta->foto_peserta) {
+                    // Hapus foto jika ada flag 'remove_foto_peserta' dan foto memang ada
+                    if (Storage::disk('public')->exists($peserta->foto_peserta)) {
+                        Storage::disk('public')->delete($peserta->foto_peserta);
+                    }
+                    $pesertaDataToUpdate['foto_peserta'] = null; // Set field di DB menjadi null
                 }
-                
+
                 $peserta->update($pesertaDataToUpdate);
             });
         } catch (\Exception $e) {
@@ -126,11 +186,11 @@ class PesertaController extends Controller
     {
         $peserta = Peserta::find($id);
 
-        $user = $peserta->user;
-
         if (!$peserta) {
             return response()->json(['message' => 'Data Peserta tidak ditemukan'], 404);
         }
+
+        $user = $peserta->user;
 
         // Hapus foto dari storage jika ada
         if ($peserta->foto_peserta && Storage::disk('public')->exists($peserta->foto_peserta)) {

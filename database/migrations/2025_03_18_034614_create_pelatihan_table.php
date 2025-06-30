@@ -23,6 +23,8 @@ return new class extends Migration
             $table->integer('jumlah_kuota');
             $table->integer('jumlah_peserta')->default(0);
             $table->dateTime('waktu_pengumpulan');
+            $table->enum('status_pelatihan', ['Dimulai', 'Sedang berlangsung', 'Selesai'])->default('Dimulai');
+            $table->enum('post_status', ['Draft', 'Published'])->default('Draft');
             $table->timestamps();
 
             // Kemudian definisikan semua foreign key constraints
