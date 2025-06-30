@@ -20,7 +20,7 @@ return new class extends Migration
             $table->date('tanggal_lahir')->nullable();
             $table->string('alamat_peserta', 1000)->nullable();
             $table->string('nomor_telp')->nullable();
-            $table->enum('status_lulus', ['lulus', 'tidak lulus', 'belum dinilai'])->default('belum dinilai');
+            $table->enum('status_lulus', ['Lulus', 'Belum Lulus'])->default('Belum Lulus');
             $table->unsignedBigInteger('pendidikan_id')->nullable();
             $table->timestamps();
         

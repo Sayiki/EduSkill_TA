@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class InformasiKontakResource extends JsonResource
+class UserResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,12 +16,8 @@ class InformasiKontakResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'alamat' => $this->alamat,
-            'email' => $this->email,
-            'telepon' => $this->telepon,
-            'whatsapp'  => $this->whatsapp,
-            'instagram' => $this->instagram,
-            'terakhir_diperbarui' => $this->updated_at->format('d M Y H:i'),
+            'name' => $this->name, // Assuming your User model has a 'name' field
+            'email' => $this->email, // Assuming your User model has an 'email' field
         ];
     }
 }

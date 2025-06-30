@@ -28,6 +28,8 @@ use App\Http\Controllers\Api\{
     BannerController,
     SlideshowController,
     MentorController,
+    FileController,
+    ProfilePesertaController,
 };
 
 Route::post('/login',  [AuthController::class, 'login']);

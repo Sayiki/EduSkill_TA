@@ -25,6 +25,18 @@ class FeedbackSeeder extends Seeder
             Peserta::factory()->count(10)->create();
         }
 
+        if (Pelatihan::count() === 0) {
+            // You might need to adjust this to create valid mentor_id, admin_id etc.
+            // For simplicity, let's assume PelatihanFactory handles its dependencies.
+            Pelatihan::factory()->count(5)->create();
+        }
+
+        // Ensure DaftarPelatihan exists
+        if (DaftarPelatihan::count() === 0) {
+            // Create DaftarPelatihan, linking existing Peserta and Pelatihan
+            DaftarPelatihan::factory()->count(20)->create(); // Create some registrations
+        }
+
         Feedback::factory()->count(30)->create();
     }
 }

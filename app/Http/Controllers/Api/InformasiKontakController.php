@@ -17,9 +17,13 @@ class InformasiKontakController extends Controller
      */
     public function index(Request $request)
     {
+        $kontak = InformasiKontak::latest()->first();
 
-        $kontak = InformasiKontak::latest()->get(); 
-        return InformasiKontakResource::collection($kontak);
+        if (!$kontak) {
+            return response()->json(['message' => 'Informasi kontak belum tersedia'], 404);
+        }
+        // Gunakan resource untuk memformat single item
+        return new InformasiKontakResource($kontak);
     }
 
     /**
@@ -28,9 +32,11 @@ class InformasiKontakController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'alamat'  => 'required|string|max:1000',
-            'email'   => 'required|email|max:255',
-            'telepon' => 'required|string|max:50',
+            'alamat'    => 'required|string|max:1000',
+            'email'     => ['required', 'email', 'max:255', Rule::unique('informasi_kontak')->ignore(InformasiKontak::first()->id ?? null)], // Unique rule for email
+            'telepon'   => 'required|string|max:50',
+            'whatsapp'  => 'nullable|string|max:50', // BARU: Tambah validasi
+            'instagram' => 'nullable|string|max:255', // BARU: Tambah validasi
         ]);
 
         $loggedInUser = $request->user();
@@ -77,15 +83,17 @@ class InformasiKontakController extends Controller
     public function update(Request $request, $id) // $id di sini mungkin tidak relevan jika hanya ada 1 record
     {
         // Ambil satu-satunya record kontak, atau record dengan ID spesifik jika Anda mengizinkan >1
-        $kontak = InformasiKontak::firstOrFail(); // Mengambil yang pertama, atau gagal jika tidak ada
+        $kontak = InformasiKontak::findOrFail($id);
         // Atau jika Anda tetap menggunakan $id:
         // $kontak = InformasiKontak::findOrFail($id);
 
 
         $validatedData = $request->validate([
-            'alamat'  => 'sometimes|required|string|max:1000',
-            'email'   => ['sometimes', 'required', 'email', 'max:255', Rule::unique('informasi_kontak')->ignore($kontak->id)],
-            'telepon' => 'sometimes|required|string|max:50',
+            'alamat'    => 'sometimes|required|string|max:1000',
+            'email'     => ['sometimes', 'required', 'email', 'max:255', Rule::unique('informasi_kontak')->ignore($kontak->id)],
+            'telepon'   => 'sometimes|required|string|max:50',
+            'whatsapp'  => 'sometimes|nullable|string|max:50', // BARU: Tambah validasi
+            'instagram' => 'sometimes|nullable|string|max:255', // BARU: Tambah validasi
         ]);
 
         $kontak->update($validatedData);

@@ -21,6 +21,8 @@ class Pelatihan extends Model
         'jumlah_kuota',
         'jumlah_peserta',   // Jumlah peserta yang sudah diterima
         'waktu_pengumpulan',// Bisa jadi deadline pendaftaran atau waktu mulai
+        'status_pelatihan', // Asumsi ada kolom ini di DB
+        'post_status',
     ];
 
     /**

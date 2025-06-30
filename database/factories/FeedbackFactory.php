@@ -26,8 +26,14 @@ class FeedbackFactory extends Factory
      */
     public function definition(): array
     {
+        $daftarPelatihan = DaftarPelatihan::inRandomOrder()->first();
+        if (!$daftarPelatihan) {
+            $daftarPelatihan = DaftarPelatihan::factory()->create();
+        }
+
         return [
             'peserta_id' => Peserta::inRandomOrder()->first()->id ?? Peserta::factory(),
+            'daftar_pelatihan_id' => $daftarPelatihan->id,
             'comment' => substr($this->faker->sentence(10, true), 0, 100),
             'tempat_kerja' => $this->faker->randomElement(['janitor', 'worker', 'hacker', 'jonkler']),
 

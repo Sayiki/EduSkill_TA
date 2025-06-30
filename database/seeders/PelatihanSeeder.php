@@ -14,6 +14,6 @@ class PelatihanSeeder extends Seeder
      */
     public function run(): void
     {
-        Pelatihan::factory()->count(10)->create();
+        Pelatihan::factory()->count(50)->create();
     }
 }

@@ -42,4 +42,9 @@ class Peserta extends Model
         return $this->hasOne(Feedback::class, 'peserta_id');
     }
 
+    public function daftar_pelatihan()
+    {
+        return $this->hasMany(DaftarPelatihan::class, 'peserta_id'); // Sesuaikan foreign key jika berbeda
+    }
+
 }

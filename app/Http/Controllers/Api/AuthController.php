@@ -129,4 +129,27 @@ class AuthController extends Controller
         ]);
     }
 
+    public function user() 
+    {
+        // Memastikan user sudah terautentikasi
+        if (!Auth::check()) {
+            // Ini akan log jika user tidak terautentikasi, membantu debugging token
+            \Log::warning('AuthController@user: User tidak terautentikasi.');
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        // Ambil user yang sedang login
+        $user = Auth::user();
+
+        // Eager load relasi 'peserta' jika user adalah peserta
+        if ($user->peran === 'peserta') {
+            $user->load('peserta');
+        }
+
+        // Kembalikan data user dalam format JSON.
+        return response()->json([
+            'user' => $user
+        ], 200);
+    }
+
 }

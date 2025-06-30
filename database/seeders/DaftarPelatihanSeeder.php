@@ -8,7 +8,6 @@ use App\Models\Peserta;
 use App\Models\Pelatihan;
 use App\Models\DaftarPelatihan;
 
-
 class DaftarPelatihanSeeder extends Seeder
 {
     /**
@@ -18,13 +17,13 @@ class DaftarPelatihanSeeder extends Seeder
     {
         // Ensure Peserta and Pelatihan exist first
         if (Peserta::count() === 0) {
-            Peserta::factory(10)->create();
+            Peserta::factory(40)->create();
         }
 
         if (Pelatihan::count() === 0) {
-            Pelatihan::factory(5)->create();
+            Pelatihan::factory(40)->create();
         }
 
-        DaftarPelatihan::factory(20)->create();
+        DaftarPelatihan::factory(40)->create();
     }
 }

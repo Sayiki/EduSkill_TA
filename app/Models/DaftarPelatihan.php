@@ -14,6 +14,7 @@ class DaftarPelatihan extends Model
     protected $fillable = [
         'peserta_id',
         'pelatihan_id',
+        'status',
         'kk',
         'ktp',
         'ijazah',
@@ -28,5 +29,15 @@ class DaftarPelatihan extends Model
     public function pelatihan()
     {
         return $this->belongsTo(Pelatihan::class, 'pelatihan_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function feedback() // Relasi baru ke Feedback
+    {
+        return $this->hasOne(Feedback::class, 'daftar_pelatihan_id');
     }
 }
