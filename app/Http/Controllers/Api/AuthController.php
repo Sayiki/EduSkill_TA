@@ -100,7 +100,6 @@ class AuthController extends Controller
                 'nomor_telp' => $data['nomor_telp'],
             ]);
 
-
             $token = JWTAuth::fromUser($user);
 
             return response()->json([
@@ -110,6 +109,7 @@ class AuthController extends Controller
                 'token_type' => 'bearer',
                 'expires_in' => JWTAuth::factory()->getTTL() * 60,
             ], 201);
+
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Registration failed',
@@ -150,6 +150,115 @@ class AuthController extends Controller
         return response()->json([
             'user' => $user
         ], 200);
+    }
+
+    public function verify(Request $request)
+    {
+        $user = User::find($request->route('id'));
+
+        // URL halaman hasil verifikasi di frontend Anda
+        $resultUrl = 'http://localhost:5173/verification-result';
+
+        if (!hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
+            // Redirect ke halaman hasil dengan pesan error
+            return redirect($resultUrl . '?status=failed');
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            // Redirect ke halaman hasil dengan pesan "sudah terverifikasi"
+            return redirect($resultUrl . '?status=already_verified');
+        }
+
+        if ($user->markEmailAsVerified()) {
+            event(new \Illuminate\Auth\Events\Verified($user));
+        }
+
+        // Redirect ke halaman hasil dengan pesan sukses
+        return redirect($resultUrl . '?status=success');
+    }
+
+    public function verifyNow(Request $request)
+    {
+        try {
+            $request->validate([
+                'id' => 'required|integer',
+                'hash' => 'required|string',
+            ]);
+
+            $user = User::find($request->input('id'));
+
+            // Check if user exists
+            if (!$user) {
+                return response()->json([
+                    'message' => 'User tidak ditemukan.',
+                    'status' => 'failed'
+                ], 404);
+            }
+
+            // Generate the expected hash
+            $expectedHash = sha1($user->getEmailForVerification());
+            $providedHash = $request->input('hash');
+
+            // Debug logging (remove in production)
+            \Log::info('Email Verification Debug', [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'expected_hash' => $expectedHash,
+                'provided_hash' => $providedHash,
+                'hash_match' => hash_equals($expectedHash, $providedHash)
+            ]);
+
+            // Validate hash
+            if (!hash_equals($expectedHash, $providedHash)) {
+                return response()->json([
+                    'message' => 'Link verifikasi tidak valid atau sudah kadaluarsa.',
+                    'status' => 'failed'
+                ], 400);
+            }
+
+            // Check if already verified
+            if ($user->hasVerifiedEmail()) {
+                return response()->json([
+                    'message' => 'Email sudah diverifikasi sebelumnya.',
+                    'status' => 'already_verified'
+                ], 200);
+            }
+
+            // Mark as verified
+            if ($user->markEmailAsVerified()) {
+                event(new \Illuminate\Auth\Events\Verified($user));
+                
+                return response()->json([
+                    'message' => 'Email berhasil diverifikasi!',
+                    'status' => 'success'
+                ], 200);
+            }
+
+            return response()->json([
+                'message' => 'Gagal memverifikasi email.',
+                'status' => 'failed'
+            ], 500);
+
+        } catch (\Exception $e) {
+            \Log::error('Email verification error: ' . $e->getMessage());
+            
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat memverifikasi email.',
+                'status' => 'error',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function resend(Request $request)
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email sudah diverifikasi.'], 400);
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        return response()->json(['message' => 'Link verifikasi baru telah dikirim ke email Anda.']);
     }
 
 }

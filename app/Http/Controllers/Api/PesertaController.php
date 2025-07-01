@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
 use App\Http\Resources\PesertaPublicResource;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Arr;
 
 class PesertaController extends Controller
 {
@@ -140,15 +141,20 @@ class PesertaController extends Controller
 
         try {
             DB::transaction(function () use ($request, $user, $peserta, $validatedData) {
-                if (isset($validatedData['name'])) { // Cek apakah 'name' ada di validatedData
-                    $user->name = $validatedData['name'];
+                    // --- LOGIKA VERIFIKASI EMAIL (SUDAH BENAR) ---
+                if (isset($validatedData['email']) && $validatedData['email'] !== $user->email) {
+                    $validatedData['email_verified_at'] = null; // Tambahkan ke data yang akan diupdate
                 }
-                if (isset($validatedData['email'])) { // Cek apakah 'email' ada di validatedData
-                    $user->email = $validatedData['email'];
-                }
-                $user->save(); // Simpan perubahan pada model User
+                // ---------------------------------------------
 
-                $pesertaDataToUpdate = $request->only([
+                // Update data User dengan data yang sudah divalidasi
+                $userDataToUpdate = Arr::only($validatedData, ['name', 'email', 'email_verified_at']);
+                if (!empty($userDataToUpdate)) {
+                    $user->update($userDataToUpdate);
+                }
+
+                // Update data Peserta dengan data yang sudah divalidasi
+                $pesertaDataToUpdate = Arr::only($validatedData, [
                     'nik_peserta', 'jenis_kelamin', 'alamat_peserta', 'nomor_telp',
                     'tanggal_lahir', 'status_kerja', 'pendidikan_id'
                 ]);

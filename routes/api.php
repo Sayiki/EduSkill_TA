@@ -35,6 +35,10 @@ use App\Http\Controllers\Api\{
 Route::post('/login',  [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout']);
+Route::post('/email/verify-now', [AuthController::class, 'verifyNow']);
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verify'])
+    ->middleware(['signed'])->name('verification.verify');
+
 
 Route::get('/berita', [BeritaController::class, 'index']);
 Route::get('/berita/{id}', [BeritaController::class, 'show']);
@@ -69,11 +73,18 @@ Route::get('/profile-lpk', [ProfileLPKController::class, 'index']);
 
 Route::get('/peserta-alumni', [PesertaController::class, 'getPublicProfiles']);
 
+// Rute untuk memberitahu pengguna bahwa mereka harus verifikasi email
+Route::get('/email/verify', function () {
+    return response()->json(['message' => 'Email belum diverifikasi. Silakan cek email Anda atau minta kirim ulang link verifikasi.'], 403);
+})->middleware('auth:api')->name('verification.notice');
 
 
 Route::middleware(['jwt.auth'])->group(function () {
 
     Route::post('refresh', [AuthController::class, 'refresh']);
+
+    Route::post('/email/resend', [AuthController::class, 'resend'])
+        ->middleware(['throttle:6,1'])->name('verification.send');
     
     Route::middleware(['peran:peserta'])->group(function () {
         Route::post('/daftar-pelatihan', [DaftarPelatihanController::class, 'store']);
@@ -84,6 +95,7 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::get('/notifikasi-saya/{id}', [NotifikasiController::class, 'showForCurrentUser']);
         Route::put('/notifikasi-saya/{id}', [NotifikasiController::class, 'updateStatusForCurrentUser']);
         Route::delete('/notifikasi-saya/{id}', [NotifikasiController::class, 'destroyForCurrentUser']);
+        Route::post('/email/resend', [AuthController::class, 'resend'])->name('verification.send');
             
     });
 
