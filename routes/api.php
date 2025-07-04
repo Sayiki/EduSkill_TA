@@ -39,6 +39,7 @@ Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verify'])
     ->middleware(['signed'])->name('verification.verify');
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+Route::put('/change-password', [AuthController::class, 'changePassword']);
 
 
 Route::apiResource('berita', BeritaController::class)->only(['index', 'show']);

@@ -345,4 +345,43 @@ class AuthController extends Controller
         }
     }
 
+    public function changePassword(Request $request)
+    {
+  
+        $user = auth('api')->user();
+
+
+        $request->validate([
+            'current_password' => [
+                'required',
+                'string',
+    
+                function ($attribute, $value, $fail) use ($user) {
+                    if (!Hash::check($value, $user->password)) {
+
+                        $fail('Password saat ini yang Anda masukkan salah.');
+                    }
+                },
+            ],
+            'new_password' => [
+                'required',
+                'string',
+                'confirmed', 
+                'different:current_password', 
+        
+                Password::min(8)
+                    ->mixedCase()
+                    ->numbers()
+            ],
+        ]);
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+
+        return response()->json([
+            'message' => 'Password berhasil diubah.'
+        ], 200);
+    }
+
 }
