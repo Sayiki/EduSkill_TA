@@ -244,7 +244,7 @@ class PesertaController extends Controller
             // HANYA ambil Peserta yang MEMILIKI feedback
             // DAN di dalam feedback itu, 'tempat_kerja' tidak null.
             ->whereHas('feedback', function (Builder $query) {
-                $query->whereNotNull('tempat_kerja');
+                $query->whereNotNull('tempat_kerja')->where('status', 'Ditampilkan');
             })
             
             ->whereNotNull('foto_peserta')

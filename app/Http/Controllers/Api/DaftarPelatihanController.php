@@ -44,22 +44,31 @@ class DaftarPelatihanController extends Controller
             'kk'           => 'required|file|mimes:jpeg,png,pdf|max:2048',
             'ijazah'       => 'required|file|mimes:jpeg,png,pdf|max:2048',
             'foto'         => 'required|file|mimes:jpeg,png,pdf|max:2048',
-
-            // Tambahan validasi untuk data user/peserta yang dikirim dari frontend
             'name'         => 'required|string|max:255',
             'email'        => 'required|email|max:255',
             'nomor_telp'   => 'required|string|max:15',
             'pendidikan_id' => 'required|integer|exists:pendidikan,id',
             'alamat_peserta' => 'required|string|max:255',
-            // --- PERBAIKAN DI SINI: Validasi untuk jenis_kelamin dan tanggal_lahir ---
             'jenis_kelamin' => ['required', Rule::in(['Laki-laki', 'Perempuan'])],
             'tanggal_lahir' => ['required', 'date'],
-            // =====================================================================
         ]);
 
         DB::beginTransaction();
 
         try {
+            $pelatihan = Pelatihan::lockForUpdate()->find($validatedData['pelatihan_id']);
+
+            if (!$pelatihan) {
+                DB::rollBack();
+                return response()->json(['message' => 'Pelatihan tidak valid.'], 404);
+            }
+
+            // Cek kuota SEBELUM melakukan apapun
+            if ($pelatihan->jumlah_peserta >= $pelatihan->jumlah_kuota) {
+                DB::rollBack();
+                return response()->json(['message' => 'Maaf, kuota untuk pelatihan ini sudah penuh.'], 409);
+            }
+
             $user = $request->user();
 
             $user->name = $validatedData['name'];
@@ -147,6 +156,8 @@ class DaftarPelatihanController extends Controller
 
             $entry = DaftarPelatihan::create($entryData);
 
+            $pelatihan->increment('jumlah_peserta');
+
             DB::commit();
             return response()->json($entry->load(['peserta.user', 'pelatihan']), 201);
 
@@ -187,33 +198,39 @@ class DaftarPelatihanController extends Controller
 
     public function update(Request $request, $id)
     {
-        $entry = DaftarPelatihan::with(['pelatihan', 'peserta'])->findOrFail($id);
-
+        $entry = DaftarPelatihan::with('pelatihan')->findOrFail($id);
         $validatedData = $request->validate([
             'status' => ['required', Rule::in(['ditinjau', 'diterima', 'ditolak'])],
         ]);
 
         $newStatus = $validatedData['status'];
         $originalStatus = $entry->status;
+        $pelatihan = $entry->pelatihan;
 
         if ($newStatus === $originalStatus) {
             return response()->json($entry->load(['peserta.user', 'pelatihan']), 200);
         }
-
-        $pelatihan = $entry->pelatihan;
-
-        if ($newStatus === 'diterima') {
-            if ($pelatihan->jumlah_peserta >= $pelatihan->jumlah_kuota) {
-                return response()->json([
-                    'message' => 'Gagal menerima peserta. Kuota untuk pelatihan ini sudah penuh.',
-                    'kuota' => $pelatihan->jumlah_kuota,
-                    'peserta_saat_ini' => $pelatihan->jumlah_peserta,
-                ], 409);
+        
+        DB::transaction(function () use ($entry, $pelatihan, $originalStatus, $newStatus) {
+            // HANYA KEMBALIKAN KUOTA JIKA PENDAFTAR DITOLAK
+            if ($newStatus === 'ditolak' && ($originalStatus === 'ditinjau' || $originalStatus === 'diterima')) {
+                $pelatihan->decrement('jumlah_peserta');
+            } 
+            // JIKA SEBELUMNYA DITOLAK, LALU DITERIMA KEMBALI (kasus langka)
+            elseif (($newStatus === 'diterima' || $newStatus === 'ditinjau') && $originalStatus === 'ditolak') {
+                // Cek kuota lagi sebelum menerima kembali
+                $pelatihan->refresh(); // Ambil data terbaru dari DB
+                if ($pelatihan->jumlah_peserta >= $pelatihan->jumlah_kuota) {
+                    // Throw exception untuk membatalkan transaksi dan memberi error
+                    throw new \Exception('Gagal mengubah status. Kuota sudah penuh oleh pendaftar lain.');
+                }
+                $pelatihan->increment('jumlah_peserta');
             }
-        }
 
-        $entry->status = $newStatus;
-        $entry->save();
+            // Simpan status baru pendaftaran
+            $entry->status = $newStatus;
+            $entry->save();
+        });
 
         $notificationMessage = '';
 
@@ -250,7 +267,8 @@ class DaftarPelatihanController extends Controller
     {
         $entry = DaftarPelatihan::with('pelatihan')->findOrFail($id);
 
-        if ($entry->status === 'diterima' && $entry->pelatihan) {
+        // Kembalikan kuota jika pendaftaran yang dihapus berstatus 'diterima' atau 'ditinjau'
+        if ($entry->pelatihan && ($entry->status === 'diterima' || $entry->status === 'ditinjau')) {
             $entry->pelatihan->decrement('jumlah_peserta');
         }
         

@@ -66,6 +66,7 @@ class NotifikasiController extends Controller
             'excluded_peserta_ids.*' => 'integer|exists:peserta,id', // Validasi setiap ID dalam array
         ]);
 
+        $judul = $validatedData['judul'];
         $pesan = $validatedData['pesan'];
         $excludedIds = $request->input('excluded_peserta_ids', []); // Default array kosong jika tidak ada
 
@@ -112,8 +113,12 @@ class NotifikasiController extends Controller
         $pesertaId = $user->peserta->id;
 
         $notifikasi = Notifikasi::where('id', $notifikasi_id)
-                                ->where('peserta_id', $pesertaId)
-                                ->firstOrFail();
+                            ->where('peserta_id', $pesertaId)
+                            ->first();
+
+        if (!$notifikasi) {
+            return response()->json(['message' => 'Notifikasi tidak ditemukan atau bukan milik Anda.'], 404);
+        }
 
         return new NotifikasiResource($notifikasi);
     }
@@ -132,7 +137,11 @@ class NotifikasiController extends Controller
 
         $notifikasi = Notifikasi::where('id', $notifikasi_id)
                                 ->where('peserta_id', $pesertaId)
-                                ->firstOrFail();
+                                ->first();
+        
+        if (!$notifikasi) {
+            return response()->json(['message' => 'Gagal memperbarui. Notifikasi tidak ditemukan atau bukan milik Anda.'], 404);
+        }
 
         $validatedData = $request->validate([
             'status' => ['required', Rule::in(['dibaca', 'belum dibaca'])],
@@ -157,8 +166,12 @@ class NotifikasiController extends Controller
 
         $notifikasi = Notifikasi::where('id', $notifikasi_id)
                                 ->where('peserta_id', $pesertaId)
-                                ->firstOrFail();
+                                ->first();
         
+        if (!$notifikasi) {
+            return response()->json(['message' => 'Gagal menghapus. Notifikasi tidak ditemukan atau bukan milik Anda.'], 404);
+        }
+
         $notifikasi->delete();
 
         return response()->json(['message' => 'Notifikasi berhasil dihapus.'], 200);
