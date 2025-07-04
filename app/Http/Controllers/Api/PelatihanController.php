@@ -27,9 +27,6 @@ class PelatihanController extends Controller
         $postStatusFilter = $request->query('post_status');
 
         $query = Pelatihan::with(['mentor', 'admin.user']);
-        $query->whereColumn('jumlah_peserta', '<', 'jumlah_kuota');
-        $query->where('waktu_pengumpulan', '>', now());
-        $query->where('post_status', 'Published');
 
         if ($searchQuery) {
             $query->where('nama_pelatihan', 'like', '%' . $searchQuery . '%');

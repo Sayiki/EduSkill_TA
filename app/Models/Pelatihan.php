@@ -19,11 +19,13 @@ class Pelatihan extends Model
         'biaya',
         'keterangan_pelatihan',
         'jumlah_kuota',
-        'jumlah_peserta',   // Jumlah peserta yang sudah diterima
-        'waktu_pengumpulan',// Bisa jadi deadline pendaftaran atau waktu mulai
-        'status_pelatihan', // Asumsi ada kolom ini di DB
+        'jumlah_peserta',   
+        'waktu_pengumpulan',
+        'status_pelatihan', 
         'post_status',
     ];
+
+    protected $appends = ['status_pendaftaran'];
 
     /**
      * The attributes that should be cast.
@@ -32,8 +34,6 @@ class Pelatihan extends Model
      */
     protected $casts = [
         'waktu_pengumpulan' => 'datetime',
-        'jumlah_kuota' => 'integer',
-        'jumlah_peserta' => 'integer',
     ];
 
     /**
@@ -59,5 +59,18 @@ class Pelatihan extends Model
     public function pendaftar()
     {
         return $this->hasMany(DaftarPelatihan::class, 'pelatihan_id');
+    }
+
+    public function getStatusPendaftaranAttribute(): string
+    {
+        if (now()->gt($this->waktu_pengumpulan)) {
+            return 'Pendaftaran Ditutup';
+        }
+
+        if ($this->jumlah_peserta >= $this->jumlah_kuota) {
+            return 'Kuota Penuh';
+        }
+
+        return 'Tersedia'; 
     }
 }

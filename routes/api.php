@@ -78,6 +78,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     
     Route::middleware(['peran:peserta'])->group(function () {
         Route::post('/daftar-pelatihan', [DaftarPelatihanController::class, 'store']);
+        Route::get('/daftar-pelatihan/current-user', [DaftarPelatihanController::class, 'indexForCurrentUser']);
         Route::get('/profil-saya', [PesertaController::class, 'showMyProfile']);
         Route::put('/peserta/{id}', [PesertaController::class, 'update']);
         Route::post('/feedback/{id}', [FeedbackController::class, 'store']);
@@ -112,9 +113,10 @@ Route::middleware(['jwt.auth'])->group(function () {
 
         // Feedback
         Route::get('/feedback', [FeedbackController::class, 'index']);
+        Route::get('/feedback/{id}', [FeedbackController::class, 'show']);
         Route::put('/feedback/{id}', [FeedbackController::class, 'update']);
         Route::delete('/feedback/{id}', [FeedbackController::class, 'destroy']);
-        Route::get('/feedback/{id}', [FeedbackController::class, 'show']);
+        
 
         // Berita
         Route::post('/berita', [BeritaController::class, 'store']);
