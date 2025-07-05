@@ -18,12 +18,12 @@ return new class extends Migration
             $table->unsignedBigInteger('mentor_id')->nullable(); // Didefinisikan setelah admin_id, tanpa ->after()
             $table->string('nama_pelatihan', 100);
             $table->string('kategori', 25);
-            $table->integer('biaya', 100);
+            $table->integer('biaya');
             $table->string('keterangan_pelatihan', 350);
             $table->integer('jumlah_kuota');
             $table->integer('jumlah_peserta')->default(0);
             $table->dateTime('waktu_pengumpulan');
-            $table->enum('status_pelatihan', ['Belum Dimulai', 'Sedang berlangsung', 'Selesai'])->default('Dimulai');
+            $table->enum('status_pelatihan', ['Belum Dimulai', 'Sedang berlangsung', 'Selesai'])->default('Belum Dimulai');
             $table->enum('post_status', ['Draft', 'Published'])->default('Draft');
             $table->timestamps();
 
