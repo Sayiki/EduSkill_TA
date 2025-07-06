@@ -32,7 +32,7 @@ class InformasiKontakController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'alamat'    => 'required|string|max:1000',
+            'alamat'    => 'string|max:1000',
             'email'     => ['required', 'email', 'max:255', Rule::unique('informasi_kontak')->ignore(InformasiKontak::first()->id ?? null)], // Unique rule for email
             'telepon'   => 'required|string|max:50',
             'whatsapp'  => 'nullable|string|max:50', // BARU: Tambah validasi
