@@ -30,8 +30,8 @@ class InformasiGaleriController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'nama_kegiatan' => 'required|string|max:255',
-            'foto_galeri'   => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10000', 
+            'judul_foto' => 'required|string|max:255',
+            'file_foto'   => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10000', 
         ]);
 
         $loggedInUser = $request->user();
@@ -42,8 +42,8 @@ class InformasiGaleriController extends Controller
         $validatedData['admin_id'] = $admin->id;
 
         // TAMBAHKAN LOGIKA PENYIMPANAN FILE
-        if ($request->hasFile('foto_galeri')) {
-            $validatedData['foto_galeri'] = $request->file('foto_galeri')->store('galeri_kegiatan', 'public');
+        if ($request->hasFile('file_foto')) {
+            $validatedData['file_foto'] = $request->file('file_foto')->store('galeri_kegiatan', 'public');
         }
 
         $item = InformasiGaleri::create($validatedData);
@@ -71,25 +71,25 @@ class InformasiGaleriController extends Controller
         $item = InformasiGaleri::findOrFail($id);
 
         $validatedData = $request->validate([
-            'nama_kegiatan' => 'sometimes|required|string|max:255',
+            'judul_foto' => 'sometimes|required|string|max:255',
             // UBAH VALIDASI: dari 'url' menjadi 'image' jika admin bisa ganti file
-            'foto_galeri'   => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10000',
+            'file_foto'   => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10000',
         ]);
 
         // TAMBAHKAN LOGIKA UPDATE FILE
-        if ($request->hasFile('foto_galeri')) {
+        if ($request->hasFile('file_foto')) {
             // Hapus foto lama jika ada
-            if ($item->foto_galeri && Storage::disk('public')->exists($item->foto_galeri)) {
-                Storage::disk('public')->delete($item->foto_galeri);
+            if ($item->file_foto && Storage::disk('public')->exists($item->file_foto)) {
+                Storage::disk('public')->delete($item->file_foto);
             }
             // Simpan foto baru
-            $validatedData['foto_galeri'] = $request->file('foto_galeri')->store('galeri_kegiatan', 'public');
-        } elseif ($request->input('remove_foto_galeri') == true && $item->foto_galeri) {
+            $validatedData['file_foto'] = $request->file('file_foto')->store('galeri_kegiatan', 'public');
+        } elseif ($request->input('remove_file_foto') == true && $item->file_foto) {
             // Jika ada flag untuk menghapus foto dan foto ada
-             if (Storage::disk('public')->exists($item->foto_galeri)) {
-                Storage::disk('public')->delete($item->foto_galeri);
+             if (Storage::disk('public')->exists($item->file_foto)) {
+                Storage::disk('public')->delete($item->file_foto);
             }
-            $validatedData['foto_galeri'] = null; // Set path di DB menjadi null
+            $validatedData['file_foto'] = null; // Set path di DB menjadi null
         }
 
         $item->update($validatedData);
@@ -105,12 +105,12 @@ class InformasiGaleriController extends Controller
         $item = InformasiGaleri::findOrFail($id);
 
         // PASTIKAN LOGIKA PENGHAPUSAN FILE SUDAH BENAR
-        // Jika 'foto_galeri' menyimpan path relatif ke file di storage lokal
-        if ($item->foto_galeri) {
+        // Jika 'file_foto' menyimpan path relatif ke file di storage lokal
+        if ($item->file_foto) {
             // Cek apakah ini URL atau path. Jika bukan URL, anggap path dan coba hapus.
-            if (!filter_var($item->foto_galeri, FILTER_VALIDATE_URL)) {
-                if (Storage::disk('public')->exists($item->foto_galeri)) {
-                    Storage::disk('public')->delete($item->foto_galeri);
+            if (!filter_var($item->file_foto, FILTER_VALIDATE_URL)) {
+                if (Storage::disk('public')->exists($item->file_foto)) {
+                    Storage::disk('public')->delete($item->file_foto);
                 }
             }
             // Jika ini adalah URL eksternal, Anda mungkin tidak perlu melakukan apa-apa,

@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('informasi_galeri', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('admin_id')->nullable();
-            $table->string('nama_kegiatan');
-            $table->string('foto_galeri')->nullable();
+            $table->string('judul_foto');
+            $table->string('file_foto')->nullable();
 
             $table->foreign('admin_id')
                   ->references('id')->on('admin')

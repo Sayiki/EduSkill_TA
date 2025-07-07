@@ -10,7 +10,7 @@ class InformasiGaleri extends Model
 {
     use HasFactory;
     protected $table = 'informasi_galeri';
-    protected $fillable = ['nama_kegiatan', 'foto_galeri', 'admin_id'];
+    protected $fillable = ['judul_foto', 'file_foto', 'admin_id'];
 
     public function admin()
     {

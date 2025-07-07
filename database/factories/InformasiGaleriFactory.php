@@ -13,8 +13,8 @@ class InformasiGaleriFactory extends Factory
     public function definition(): array
     {
         return [
-            'nama_kegiatan' => $this->faker->sentence(3),
-            'foto_galeri' => $this->faker->imageUrl(640, 480, 'events', true),
+            'judul_foto' => $this->faker->sentence(3),
+            'file_foto' => $this->faker->imageUrl(640, 480, 'events', true),
             'admin_id' => Admin::inRandomOrder()->first()->id
 
         ];
