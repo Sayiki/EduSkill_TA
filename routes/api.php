@@ -81,7 +81,7 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('/daftar-pelatihan', [DaftarPelatihanController::class, 'store']);
         Route::get('/daftar-pelatihan/current-user', [DaftarPelatihanController::class, 'indexForCurrentUser']);
         Route::get('/profil-saya', [PesertaController::class, 'showMyProfile']);
-        Route::put('/peserta/{id}', [PesertaController::class, 'update']);
+        Route::put('/profil-saya', [PesertaController::class, 'updateMyProfile']);
         Route::post('/feedback/{id}', [FeedbackController::class, 'store']);
         Route::get('/notifikasi-saya', [NotifikasiController::class, 'indexForCurrentUser']);
         Route::get('/notifikasi-saya/{notifikasi_id}', [NotifikasiController::class, 'showForCurrentUser']);
@@ -108,6 +108,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
         // Peserta
         Route::post('/peserta/{id}', [PesertaController::class, 'store']);
+        Route::put('/peserta/{id}', [PesertaController::class, 'update']);
         Route::get('/peserta', [PesertaController::class, 'index']);
         Route::get('/peserta/{id}', [PesertaController::class, 'show']);
         Route::delete('/peserta/{id}', [PesertaController::class, 'destroy']);

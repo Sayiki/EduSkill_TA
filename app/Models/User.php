@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use App\Models\Admin;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\CustomResetPasswordNotification;
 
 class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
@@ -23,6 +24,19 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'password',
         'peran',
     ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
 
     public function peserta()
     {
@@ -64,6 +78,17 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        \Log::info('sendPasswordResetNotification called', [
+            'user_id' => $this->id,
+            'email' => $this->email,
+            'token' => $token
+        ]);
+
+        $this->notify(new CustomResetPasswordNotification($token));
     }
     
 }

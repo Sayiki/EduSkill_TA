@@ -11,7 +11,8 @@ use App\Models\Peserta;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
-
+use Illuminate\Support\Facades\Password as PasswordFacade;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -261,39 +262,43 @@ class AuthController extends Controller
         return response()->json(['message' => 'Link verifikasi baru telah dikirim ke email Anda.']);
     }
 
-    public function forgotPassword(Request $request)
+     public function forgotPassword(Request $request)
     {
         $request->validate(['email' => 'required|email']);
 
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
+            // Selalu kembalikan pesan generik untuk keamanan
             return response()->json([
-                'message' => 'Jika email Anda terdaftar dan terverifikasi, Anda akan menerima link reset password.'
+                'message' => 'Jika email Anda terdaftar, kami telah mengirimkan tautan untuk mengatur ulang kata sandi Anda.'
             ], 200);
         }
-
 
         if (!$user->hasVerifiedEmail()) {
             return response()->json([
-                'message' => 'Email Anda belum terverifikasi. Silakan verifikasi email Anda terlebih dahulu sebelum mereset password.'
-            ], 422); 
+                'message' => 'Email Anda belum terverifikasi. Silakan verifikasi terlebih dahulu.'
+            ], 422);
         }
-        
 
-        $status = Password::sendResetLink($request->only('email'));
+        try {
+            // 1. Buat token secara manual
+            $token = PasswordFacade::broker()->createToken($user);
+            
+            // 2. Kirim notifikasi ke user (ini akan memanggil metode sendPasswordResetNotification di model User)
+            $user->sendPasswordResetNotification($token);
 
-        if ($status == Password::RESET_LINK_SENT) {
             return response()->json([
                 'message' => 'Link reset password telah dikirim ke email Anda.'
             ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error('Gagal mengirim email reset password: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Terjadi kesalahan pada server saat mencoba mengirim email.'
+            ], 500);
         }
-
-        return response()->json([
-            'message' => 'Gagal mengirim link reset password. Silakan coba lagi nanti.'
-        ], 500);
     }
-
 
 
     public function resetPassword(Request $request)
@@ -301,11 +306,17 @@ class AuthController extends Controller
         $request->validate([
             'token'    => 'required|string',
             'email'    => 'required|email',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => ['required', 'confirmed',
+                    Password::min(8)
+                        ->letters()
+                        ->mixedCase()
+                        ->numbers()
+                        ->symbols()
+                ],
         ]);
 
 
-        $status = Password::broker()->reset(
+        $status = PasswordFacade::broker()->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
             
@@ -317,7 +328,7 @@ class AuthController extends Controller
             }
         );
 
-        if ($status == Password::PASSWORD_RESET) {
+        if ($status == PasswordFacade::PASSWORD_RESET) {
             return response()->json([
                 'message' => 'Password berhasil direset. Silakan login dengan password baru Anda.'
             ], 200);
