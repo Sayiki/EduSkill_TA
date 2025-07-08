@@ -16,8 +16,22 @@ class KategoriPelatihanController extends Controller
      */
     public function index(Request $request)
     {
-        // Fetch all categories, useful for dropdowns in the frontend
-        $kategori = KategoriPelatihan::latest()->get();
+        // Get query params for pagination and search
+        $perPage = $request->query('per_page', 10);
+        $searchQuery = $request->query('search');
+
+        // Start the query
+        $query = KategoriPelatihan::withCount('pelatihan');
+
+        // Apply search filter if it exists
+        if ($searchQuery) {
+            $query->where('nama_kategori', 'like', '%' . $searchQuery . '%');
+        }
+
+        // Paginate the results
+        $kategori = $query->latest()->paginate($perPage);
+
+        // Return the paginated resource collection
         return KategoriPelatihanResource::collection($kategori);
     }
 

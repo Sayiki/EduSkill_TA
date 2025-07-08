@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\{
     MentorController,
     FileController,
     ProfilePesertaController,
+    KategoriPelatihanController,
 };
 
 Route::post('/login',  [AuthController::class, 'login']);

@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\KategoriPelatihan;
+use App\Models\Mentor;
+use App\Models\DaftarPelatihan;
+use App\Models\Admin;
 
 class Pelatihan extends Model
 {
