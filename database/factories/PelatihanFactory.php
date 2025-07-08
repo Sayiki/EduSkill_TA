@@ -13,6 +13,7 @@ use App\Models\Ketua;
 use App\Models\Pelatihan;
 use App\Models\DaftarPelatihan;
 use App\Models\StatusLamaran;
+use App\Models\KategoriPelatihan;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Pelatihan>
