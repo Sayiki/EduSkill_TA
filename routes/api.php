@@ -43,6 +43,8 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::put('/change-password', [AuthController::class, 'changePassword']);
 
 
+
+
 Route::apiResource('berita', BeritaController::class)->only(['index', 'show']);
 Route::apiResource('banner', BannerController::class)->only(['index', 'show']);
 Route::apiResource('slideshow', SlideshowController::class)->only(['index', 'show']);
@@ -77,7 +79,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::get('/documents/{filename}', [FileController::class, 'downloadDocument']);
 
-    Route::post('/email/resend', [AuthController::class, 'resend'])
+    Route::post('/resend', [AuthController::class, 'resend'])
         ->middleware(['throttle:6,1'])->name('verification.send');
     
     Route::middleware(['peran:peserta'])->group(function () {
