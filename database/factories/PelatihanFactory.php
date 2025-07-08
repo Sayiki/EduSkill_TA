@@ -30,7 +30,7 @@ class PelatihanFactory extends Factory
             'nama_pelatihan' => $this->faker->sentence(3),
             'keterangan_pelatihan' => $this->faker->text(200),
             'jumlah_kuota' => $this->faker->numberBetween(20, 100),
-            'kategori' => $this->faker->randomElement(['something', 'idk', 'math']),
+            'kategori_id' => $kategoriId, 
             'biaya' => $this->faker->numberBetween(50000, 1000000),
             'jumlah_peserta' => $this->faker->numberBetween(0, 20),
             'waktu_pengumpulan' => $this->faker->dateTimeBetween('+1 week', '+1 month'),
