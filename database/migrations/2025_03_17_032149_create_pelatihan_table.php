@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('admin_id')->nullable();
             $table->unsignedBigInteger('mentor_id')->nullable(); // Didefinisikan setelah admin_id, tanpa ->after()
             $table->string('nama_pelatihan', 100);
+            $table->string('foto_pelatihan')->nullable();
             $table->unsignedBigInteger('kategori_id')->nullable(); 
             $table->integer('biaya');
             $table->string('keterangan_pelatihan', 350);

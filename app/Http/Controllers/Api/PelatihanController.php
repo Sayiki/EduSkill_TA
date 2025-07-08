@@ -12,6 +12,7 @@ use App\Http\Resources\PelatihanResource; // Import resource
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB; // Import DB facade for transactions
 use Illuminate\Support\Facades\Log; // Optional: for logging
+use Illuminate\Support\Facades\Storage;
 
 class PelatihanController extends Controller
 {
@@ -42,7 +43,7 @@ class PelatihanController extends Controller
 
         $paginator = $query->paginate($perPage);
 
-        return response()->json($paginator);
+        return PelatihanResource::collection($paginator);
     }
 
     /**
@@ -54,7 +55,8 @@ class PelatihanController extends Controller
         $validatedData = $request->validate([
             'nama_pelatihan'       => 'required|string|max:100',
             'keterangan_pelatihan' => 'required|string|max:350',
-            'kategori'             => 'required|string|max:100',
+            'foto_pelatihan'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'biaya'                => 'required|required|integer',
             'kategori_id'          => 'required|integer|exists:kategori_pelatihan,id',
             'jumlah_kuota'         => 'required|integer|min:1',
             'waktu_pengumpulan'    => 'required|date_format:Y-m-d H:i:s',
@@ -72,7 +74,7 @@ class PelatihanController extends Controller
         $validatedData['jumlah_peserta'] = 0;
 
         if (!isset($validatedData['status_pelatihan'])) {
-            $validatedData['status_pelatihan'] = 'Dimulai';
+            $validatedData['status_pelatihan'] = 'Belum Dimulai';
         }
         if (!isset($validatedData['post_status'])) {
             $validatedData['post_status'] = 'Draft';
@@ -107,14 +109,25 @@ class PelatihanController extends Controller
         $validatedData = $request->validate([
             'nama_pelatihan'       => 'sometimes|required|string|max:100',
             'keterangan_pelatihan' => 'sometimes|required|string|max:350',
+            'foto_pelatihan'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'kategori_id'          => 'sometimes|required|integer|exists:kategori_pelatihan,id',
-            'biaya'                => 'sometimes|required|string',
+            'biaya'                => 'sometimes|required|integer',
             'jumlah_kuota'         => 'sometimes|required|integer|min:1',
             'waktu_pengumpulan'    => 'sometimes|required|date_format:Y-m-d H:i:s',
             'mentor_id'            => 'sometimes|nullable|integer|exists:mentor,id',
             'status_pelatihan'     => ['sometimes', 'required', Rule::in(['Belum Dimulai', 'Sedang berlangsung', 'Selesai'])],
             'post_status'          => ['sometimes', 'required', Rule::in(['Draft', 'Published'])],
         ]);
+
+        if ($request->hasFile('foto_pelatihan')) {
+            // Hapus foto lama jika ada
+            if ($pelatihan->foto_pelatihan) {
+                Storage::disk('public')->delete($pelatihan->foto_pelatihan);
+            }
+            // Simpan foto baru dan dapatkan path-nya
+            $path = $request->file('foto_pelatihan')->store('gambar_pelatihan', 'public');
+            $validatedData['foto_pelatihan'] = $path;
+        }
 
         // Capture the old status before updating
         $oldStatusPelatihan = $pelatihan->status_pelatihan;
@@ -149,9 +162,10 @@ class PelatihanController extends Controller
     {
         $pelatihan = Pelatihan::findOrFail($id);
         
-        // Pertimbangkan apa yang terjadi dengan pendaftaran terkait jika pelatihan dihapus.
-        // onDelete('cascade') pada tabel daftar_pelatihan.id_pelatihan akan menghapus semua pendaftaran.
-        // Jika ada peserta yang sudah diterima, mungkin perlu logika tambahan.
+        // Hapus foto terkait dari storage sebelum menghapus record
+        if ($pelatihan->foto_pelatihan) {
+            Storage::disk('public')->delete($pelatihan->foto_pelatihan);
+        }
         
         $pelatihan->delete();
 

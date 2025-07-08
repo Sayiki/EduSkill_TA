@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder
             PendidikanSeeder::class,
             NotifikasiSeeder::class,
             FeedbackSeeder::class,
-            LaporanAdminSeeder::class,
             PelatihanSeeder::class,
             DaftarPelatihanSeeder::class,
             InformasiGaleriSeeder::class,

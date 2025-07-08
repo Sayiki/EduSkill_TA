@@ -19,6 +19,7 @@ class Pelatihan extends Model
         'admin_id',         // Admin yang membuat/mengelola pelatihan
         'mentor_id',        // Mentor untuk pelatihan ini
         'nama_pelatihan',
+        'foto_pelatihan',
         'kategori_id',
         'biaya',
         'keterangan_pelatihan',

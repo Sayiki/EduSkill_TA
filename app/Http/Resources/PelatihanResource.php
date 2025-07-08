@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class PelatihanResource extends JsonResource
 {
@@ -17,6 +18,7 @@ class PelatihanResource extends JsonResource
         return [
             'id' => $this->id,
             'nama_pelatihan' => $this->nama_pelatihan,
+            'foto_pelatihan' => $this->foto_pelatihan ? Storage::url($this->foto_pelatihan) : null,
             'keterangan_pelatihan' => $this->keterangan_pelatihan,
             'kategori' => $this->whenLoaded('kategori', function () {
                 return $this->kategori->nama_kategori;
