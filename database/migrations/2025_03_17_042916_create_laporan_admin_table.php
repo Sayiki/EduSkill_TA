@@ -12,19 +12,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('laporan_admin', function (Blueprint $table) {
+            // The primary key for the table.
             $table->id();
+
+            // The foreign key to link to the 'admin' table.
             $table->unsignedBigInteger('admin_id')->nullable();
+
+            // The description of the report. Using TEXT allows for longer descriptions.
+            $table->text('laporan_deskripsi');
+
+            // The standard 'created_at' and 'updated_at' timestamp columns.
+            $table->timestamps();
+
+            // Defines the foreign key constraint.
             $table->foreign('admin_id')
                   ->references('id')->on('admin')
-                  ->onUpdate('cascade')
-                  ->onDelete('set null');
-            $table->timestamp('waktu_upload')->nullable();
-            $table->integer('jumlah_peserta')->unsigned();
-            $table->integer('jumlah_lulusan_bekerja')->unsigned();
-            $table->integer('jumlah_pendaftar')->unsigned();
-            $table->string('pelatihan_dibuka', 100);
-            $table->string('pelatihan_berjalan', 100);
-            $table->timestamps();
+                  ->onDelete('set null'); // If the admin is deleted, this ID becomes null.
         });
     }
 

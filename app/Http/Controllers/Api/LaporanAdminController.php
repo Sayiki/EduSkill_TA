@@ -20,11 +20,21 @@ class LaporanAdminController extends Controller
      */
     public function index(Request $request)
     {
-        // Pastikan Anda memiliki LaporanAdminPolicy dengan metode viewAny
-        // $this->authorize('viewAny', LaporanAdmin::class); 
-
         $perPage = $request->query('per_page', 10);
-        $laporan = LaporanAdmin::with('admin.user')->latest()->paginate($perPage);
+        $searchQuery = $request->query('search');
+
+        // Start query on LaporanAdmin model, eager loading relationships
+        $query = LaporanAdmin::with('admin.user');
+
+        // Add search functionality - searches by the Admin's name
+        if ($searchQuery) {
+            $query->whereHas('admin.user', function ($q) use ($searchQuery) {
+                $q->where('name', 'like', '%' . $searchQuery . '%');
+            });
+        }
+        
+        $laporan = $query->latest()->paginate($perPage);
+        
         return LaporanAdminResource::collection($laporan);
     }
 
@@ -47,30 +57,21 @@ class LaporanAdminController extends Controller
      */
     public function storeOrUpdateMyLaporan(Request $request)
     {
-        $loggedInUser = Auth::user();
-        // Ensure adminProfile relation exists and is loaded correctly on User model
-        if (!$loggedInUser || !$loggedInUser->adminProfile) { 
-            return response()->json(['message' => 'Profil admin tidak ditemukan untuk pengguna ini.'], 403);
-        }
-        $admin = $loggedInUser->adminProfile;
+        $admin = Auth::user()?->adminProfile;
 
- 
+        if (!$admin) {
+            return response()->json(['message' => 'Profil admin tidak ditemukan.'], 403);
+        }
 
         $validatedData = $request->validate([
-            'jumlah_peserta'         => 'required|integer|min:0',
-            'jumlah_lulusan_bekerja' => 'required|integer|min:0',
-            'jumlah_pendaftar'       => 'required|integer|min:0',
-            'pelatihan_dibuka'       => 'required|string|max:100',
-            'pelatihan_berjalan'     => 'required|string|max:100',
+            'laporan_deskripsi' => 'required|string',
         ]);
-
-        $validatedData['admin_id'] = $admin->id;
-        $validatedData['waktu_upload'] = now();
-
-        $laporan = LaporanAdmin::updateOrCreate(
-            ['admin_id' => $admin->id],
-            $validatedData
-        );
+        
+        // Use firstOrNew and save() to explicitly set the attributes.
+        // This bypasses mass assignment issues if 'laporan_deskripsi' is not in the $fillable array.
+        $laporan = LaporanAdmin::firstOrNew(['admin_id' => $admin->id]);
+        $laporan->laporan_deskripsi = $validatedData['laporan_deskripsi'];
+        $laporan->save();
 
         return new LaporanAdminResource($laporan->load('admin.user'));
     }
@@ -81,11 +82,11 @@ class LaporanAdminController extends Controller
      */
     public function showMyLaporan(Request $request)
     {
-        $loggedInUser = $request->user();
-        if (!$loggedInUser || !$loggedInUser->adminProfile) {
-            return response()->json(['message' => 'Profil admin tidak ditemukan untuk pengguna ini.'], 403);
+        $admin = Auth::user()?->adminProfile;
+
+        if (!$admin) {
+            return response()->json(['message' => 'Profil admin tidak ditemukan.'], 403);
         }
-        $admin = $loggedInUser->adminProfile;
 
         $laporan = LaporanAdmin::with('admin.user')->where('admin_id', $admin->id)->first();
 
@@ -98,13 +99,7 @@ class LaporanAdminController extends Controller
 
     public function destroy(Request $request, $laporan_id) 
     {
-        $laporan = LaporanAdmin::find($laporan_id);
-
-        if (!$laporan) {
-            return response()->json(['message' => 'Laporan Admin tidak ditemukan'], 404);
-        }
-
-        $laporan->delete();
+        $laporanAdmin->delete();
 
         return response()->json(['message' => 'Laporan Admin berhasil dihapus'], 200);
     }
