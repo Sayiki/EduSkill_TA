@@ -26,7 +26,7 @@ class PelatihanController extends Controller
         $statusFilter = $request->query('status_pelatihan');
         $postStatusFilter = $request->query('post_status');
 
-        $query = Pelatihan::with(['mentor', 'admin.user']);
+        $query = Pelatihan::with(['mentor', 'admin.user', 'kategori']);
 
         if ($searchQuery) {
             $query->where('nama_pelatihan', 'like', '%' . $searchQuery . '%');
@@ -55,7 +55,7 @@ class PelatihanController extends Controller
             'nama_pelatihan'       => 'required|string|max:100',
             'keterangan_pelatihan' => 'required|string|max:350',
             'kategori'             => 'required|string|max:100',
-            'biaya'                => 'required|string',
+            'kategori_id'          => 'required|integer|exists:kategori_pelatihan,id',
             'jumlah_kuota'         => 'required|integer|min:1',
             'waktu_pengumpulan'    => 'required|date_format:Y-m-d H:i:s',
             'mentor_id'            => 'nullable|integer|exists:mentor,id',
@@ -107,7 +107,7 @@ class PelatihanController extends Controller
         $validatedData = $request->validate([
             'nama_pelatihan'       => 'sometimes|required|string|max:100',
             'keterangan_pelatihan' => 'sometimes|required|string|max:350',
-            'kategori'             => 'sometimes|required|string|max:100',
+            'kategori_id'          => 'sometimes|required|integer|exists:kategori_pelatihan,id',
             'biaya'                => 'sometimes|required|string',
             'jumlah_kuota'         => 'sometimes|required|integer|min:1',
             'waktu_pengumpulan'    => 'sometimes|required|date_format:Y-m-d H:i:s',

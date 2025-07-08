@@ -18,7 +18,10 @@ class PelatihanResource extends JsonResource
             'id' => $this->id,
             'nama_pelatihan' => $this->nama_pelatihan,
             'keterangan_pelatihan' => $this->keterangan_pelatihan,
-            'kategori' => $this->kategori, 
+            'kategori' => $this->whenLoaded('kategori', function () {
+                return $this->kategori->nama_kategori;
+            }),
+            'kategori_id' => $this->kategori_id,
             'biaya' => $this->biaya,
             'jumlah_kuota' => $this->jumlah_kuota,
             'jumlah_peserta' => $this->jumlah_peserta, // Used for 'jumlah_peserta' in frontend

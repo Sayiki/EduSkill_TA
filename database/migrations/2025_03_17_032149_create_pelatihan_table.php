@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('mentor_id')->nullable(); // Didefinisikan setelah admin_id, tanpa ->after()
             $table->string('nama_pelatihan', 100);
             $table->string('kategori', 25);
-            $table->integer('biaya');
+            $table->unsignedBigInteger('kategori_id')->nullable()->after('mentor_id');
             $table->string('keterangan_pelatihan', 350);
             $table->integer('jumlah_kuota');
             $table->integer('jumlah_peserta')->default(0);
@@ -27,6 +27,9 @@ return new class extends Migration
             $table->enum('post_status', ['Draft', 'Published'])->default('Draft');
             $table->timestamps();
 
+            $table->foreign('kategori_id')
+                  ->references('id')->on('kategori_pelatihan')
+                  ->onDelete('set null');
             // Kemudian definisikan semua foreign key constraints
             $table->foreign('admin_id')
                   ->references('id')->on('admin')

@@ -15,7 +15,7 @@ class Pelatihan extends Model
         'admin_id',         // Admin yang membuat/mengelola pelatihan
         'mentor_id',        // Mentor untuk pelatihan ini
         'nama_pelatihan',
-        'kategori',
+        'kategori_id',
         'biaya',
         'keterangan_pelatihan',
         'jumlah_kuota',
@@ -59,6 +59,11 @@ class Pelatihan extends Model
     public function pendaftar()
     {
         return $this->hasMany(DaftarPelatihan::class, 'pelatihan_id');
+    }
+
+    public function kategori()
+    {
+        return $this->belongsTo(KategoriPelatihan::class, 'kategori_id');
     }
 
     public function getStatusPendaftaranAttribute(): string

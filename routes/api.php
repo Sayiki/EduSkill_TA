@@ -61,6 +61,8 @@ Route::apiResource('profile-yayasan', ProfileYayasanController::class)->only(['i
 
 Route::get('/peserta-alumni', [PesertaController::class, 'getPublicProfiles']);
 
+Route::get('/kategori-pelatihan', [KategoriPelatihanController::class, 'index']);
+
 // Rute untuk memberitahu pengguna bahwa mereka harus verifikasi email
 Route::get('/email/verify', function () {
     return response()->json(['message' => 'Email belum diverifikasi. Silakan cek email Anda atau minta kirim ulang link verifikasi.'], 403);
@@ -174,6 +176,8 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('/profile-yayasan', [ProfileYayasanController::class, 'store']);
         Route::post('/profile-lkp', [ProfileLKPController::class, 'store']);
         Route::post('/profile-lpk', [ProfileLPKController::class, 'store']);
+
+        Route::apiResource('kategori-pelatihan', KategoriPelatihanController::class)->except(['index']);
     });  
     
 
