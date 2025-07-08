@@ -26,6 +26,7 @@ class PelatihanFactory extends Factory
      */
     public function definition(): array
     {
+        $kategoriId = KategoriPelatihan::inRandomOrder()->first()?->id ?? KategoriPelatihan::factory()->create()->id;
         return [
             'nama_pelatihan' => $this->faker->sentence(3),
             'keterangan_pelatihan' => $this->faker->text(200),
