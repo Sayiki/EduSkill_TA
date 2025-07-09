@@ -39,33 +39,39 @@ class ProfileLPKController extends Controller
             return response()->json(['message' => 'Informasi Lembaga Induk belum ada. Silakan buat terlebih dahulu.'], 400);
         }
 
+        // 1. FIX THE VALIDATION: Change 'string' to 'image' for file uploads.
         $validatedData = $request->validate([
             'nama_lpk'      => 'required|string|max:255',
             'deskripsi_lpk' => 'required|string',
-            'foto_lpk'      => 'nullable|string|max:10000', 
+            'foto_lpk'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // Accepts images up to 2MB
         ]);
         
         $validatedData['lembaga_id'] = $informasiLembaga->id;
         
         $profile = ProfileLPK::first(); 
 
-        if ($profile) {
-            if ($request->filled('foto_lpk') && $profile->foto_lpk && 
-                (isset($validatedData['foto_lpk']) && $validatedData['foto_lpk'] !== $profile->foto_lpk) && 
-                !filter_var($profile->foto_lpk, FILTER_VALIDATE_URL)) {
-                if (Storage::disk('public')->exists($profile->foto_lpk)) {
-                    Storage::disk('public')->delete($profile->foto_lpk);
-                }
-            } elseif ($request->has('foto_lpk') && isset($validatedData['foto_lpk']) && is_null($validatedData['foto_lpk']) && $profile->foto_lpk && !filter_var($profile->foto_lpk, FILTER_VALIDATE_URL)) {
-                if (Storage::disk('public')->exists($profile->foto_lpk)) {
-                    Storage::disk('public')->delete($profile->foto_lpk);
-                }
+        // 2. HANDLE THE FILE UPLOAD
+        if ($request->hasFile('foto_lpk')) {
+            // If a profile already exists and has an old photo, delete it.
+            if ($profile && $profile->foto_lpk) {
+                Storage::disk('public')->delete($profile->foto_lpk);
             }
+            
+            // Store the new photo and get its path.
+            $path = $request->file('foto_lpk')->store('profile-lpk', 'public');
+            
+            // Save the new photo's path to be stored in the database.
+            $validatedData['foto_lpk'] = $path;
+        }
+
+        // Update the profile if it exists, otherwise create a new one.
+        if ($profile) {
             $profile->update($validatedData);
         } else {
             $profile = ProfileLPK::create($validatedData);
         }
- 
+
+        // Return the fresh data from the database.
         return new ProfileLPKResource($profile->fresh()->load('lembaga'));
     }
 

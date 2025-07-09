@@ -33,44 +33,46 @@ class ProfileLKPController extends Controller
      */
     public function store(Request $request)
     {
-        // Ambil satu-satunya entri InformasiLembaga
         $informasiLembaga = InformasiLembaga::first();
 
         if (!$informasiLembaga) {
             return response()->json(['message' => 'Informasi Lembaga Induk belum ada. Silakan buat terlebih dahulu.'], 400);
         }
 
+        // 1. FIX THE VALIDATION: Change 'string' to 'image' for file uploads.
         $validatedData = $request->validate([
-            // 'lembaga_id' tidak lagi divalidasi dari request
             'nama_lkp'      => 'required|string|max:255',
             'deskripsi_lkp' => 'required|string',
-            'foto_lkp'      => 'nullable|string|max:2048', // Asumsi string URL/path
+            'foto_lkp'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // Accepts images up to 2MB
         ]);
         
-        // Tambahkan lembaga_id secara otomatis
         $validatedData['lembaga_id'] = $informasiLembaga->id;
         
-        $profile = ProfileLKP::first(); // Asumsi hanya ada satu profil LKP
+        $profile = Profilelkp::first(); 
 
-        // Logika untuk foto
-        if ($profile) {
-            if ($request->filled('foto_lkp') && $profile->foto_lkp && 
-                (isset($validatedData['foto_lkp']) && $validatedData['foto_lkp'] !== $profile->foto_lkp) && 
-                !filter_var($profile->foto_lkp, FILTER_VALIDATE_URL)) {
-                if (Storage::disk('public')->exists($profile->foto_lkp)) {
-                    Storage::disk('public')->delete($profile->foto_lkp);
-                }
-            } elseif ($request->has('foto_lkp') && isset($validatedData['foto_lkp']) && is_null($validatedData['foto_lkp']) && $profile->foto_lkp && !filter_var($profile->foto_lkp, FILTER_VALIDATE_URL)) {
-                if (Storage::disk('public')->exists($profile->foto_lkp)) {
-                    Storage::disk('public')->delete($profile->foto_lkp);
-                }
+        // 2. HANDLE THE FILE UPLOAD
+        if ($request->hasFile('foto_lkp')) {
+            // If a profile already exists and has an old photo, delete it.
+            if ($profile && $profile->foto_lkp) {
+                Storage::disk('public')->delete($profile->foto_lkp);
             }
+            
+            // Store the new photo and get its path.
+            $path = $request->file('foto_lkp')->store('profile-lkp', 'public');
+            
+            // Save the new photo's path to be stored in the database.
+            $validatedData['foto_lkp'] = $path;
+        }
+
+        // Update the profile if it exists, otherwise create a new one.
+        if ($profile) {
             $profile->update($validatedData);
         } else {
-            $profile = ProfileLKP::create($validatedData);
+            $profile = Profilelkp::create($validatedData);
         }
- 
-        return new ProfileLKPResource($profile->fresh()->load('lembaga'));
+
+        // Return the fresh data from the database.
+        return new ProfilelkpResource($profile->fresh()->load('lembaga'));
     }
 
     /**

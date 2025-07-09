@@ -36,8 +36,6 @@ use App\Http\Controllers\Api\{
 Route::post('/login',  [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/email/verify-now', [AuthController::class, 'verifyNow']);
-Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verify'])
-    ->middleware(['signed'])->name('verification.verify');
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::put('/change-password', [AuthController::class, 'changePassword']);

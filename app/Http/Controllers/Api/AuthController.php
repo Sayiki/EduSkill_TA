@@ -153,30 +153,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function verify(Request $request)
-    {
-        $user = User::find($request->route('id'));
-
-        // URL halaman hasil verifikasi di frontend Anda
-        $resultUrl = 'http://localhost:5173/verification-result';
-
-        if (!hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
-            // Redirect ke halaman hasil dengan pesan error
-            return redirect($resultUrl . '?status=failed');
-        }
-
-        if ($user->hasVerifiedEmail()) {
-            // Redirect ke halaman hasil dengan pesan "sudah terverifikasi"
-            return redirect($resultUrl . '?status=already_verified');
-        }
-
-        if ($user->markEmailAsVerified()) {
-            event(new \Illuminate\Auth\Events\Verified($user));
-        }
-
-        // Redirect ke halaman hasil dengan pesan sukses
-        return redirect($resultUrl . '?status=success');
-    }
 
     public function verifyNow(Request $request)
     {
