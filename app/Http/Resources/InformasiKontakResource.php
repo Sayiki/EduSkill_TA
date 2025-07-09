@@ -21,6 +21,11 @@ class InformasiKontakResource extends JsonResource
             'telepon' => $this->telepon,
             'whatsapp'  => $this->whatsapp,
             'instagram' => $this->instagram,
+            'facebook_url' => $this->facebook_url,
+            'twitter_url' => $this->twitter_url,
+            'instagram_url' => $this->instagram_url,
+            'youtube_url' => $this->youtube_url,
+            'tiktok_url' => $this->tiktok_url,
             'terakhir_diperbarui' => $this->updated_at->format('d M Y H:i'),
         ];
     }

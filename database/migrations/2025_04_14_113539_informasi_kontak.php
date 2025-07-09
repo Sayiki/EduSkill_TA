@@ -23,6 +23,13 @@ return new class extends Migration
             $table->string('telepon');
             $table->string('whatsapp')->nullable();
             $table->string('instagram')->nullable();
+
+            $table->string('facebook_url')->nullable();
+            $table->string('twitter_url')->nullable();
+            $table->string('instagram_url')->nullable(); // New column for Instagram URL
+            $table->string('youtube_url')->nullable();
+            $table->string('tiktok_url')->nullable();
+            $table->string('whatsapp_url')->nullable();
             $table->timestamps();
         });
     }

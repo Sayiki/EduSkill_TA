@@ -31,36 +31,43 @@ class InformasiKontakController extends Controller
      */
     public function store(Request $request)
     {
+        // Find the existing record to ignore its ID in the unique rule
+        $existingKontakId = InformasiKontak::first()->id ?? null;
+
+        // --- UPDATED VALIDATION ---
+        // Added all the new URL fields with 'url' validation rule
         $validatedData = $request->validate([
-            'alamat'    => 'string|max:1000',
-            'email'     => ['required', 'email', 'max:255', Rule::unique('informasi_kontak')->ignore(InformasiKontak::first()->id ?? null)], // Unique rule for email
-            'telepon'   => 'required|string|max:50',
-            'whatsapp'  => 'nullable|string|max:50', // BARU: Tambah validasi
-            'instagram' => 'nullable|string|max:255', // BARU: Tambah validasi
+            'alamat'          => 'string|max:1000',
+            'email'           => ['email', 'max:255', Rule::unique('informasi_kontak')->ignore($existingKontakId)],
+            'telepon'         => 'string|max:50',
+            'whatsapp'        => 'nullable|string|max:50',
+            'instagram'       => 'nullable|string|max:255',
+            'facebook_url'    => 'nullable|url|max:2048',
+            'twitter_url'     => 'nullable|url|max:2048',
+            'instagram_url'   => 'nullable|url|max:2048',
+            'youtube_url'     => 'nullable|url|max:2048',
+            'tiktok_url'      => 'nullable|url|max:2048',
         ]);
 
         $loggedInUser = $request->user();
         if (!$loggedInUser || !$loggedInUser->adminProfile) {
-             return response()->json(['message' => 'Akses ditolak atau profil admin tidak ditemukan.'], 403);
+            return response()->json(['message' => 'Akses ditolak atau profil admin tidak ditemukan.'], 403);
         }
         $admin = $loggedInUser->adminProfile;
         
-        // Coba cari apakah sudah ada entri kontak
-        $kontak = InformasiKontak::first();
+        // Use firstOrNew to simplify create/update logic
+        $kontak = InformasiKontak::firstOrNew();
 
-        if ($kontak) {
-            // Jika sudah ada, UPDATE entri yang ada
-            $kontak->update($validatedData);
-            // Anda mungkin ingin mencatat admin_id yang melakukan update jika berbeda
-            // $kontak->admin_id = $admin->id; // Jika ingin melacak editor terakhir
-            // $kontak->save();
-        } else {
-            // Jika belum ada, CREATE entri baru
-            $validatedData['admin_id'] = $admin->id;
-            $kontak = InformasiKontak::create($validatedData);
-        }
+        // Fill the model with validated data
+        $kontak->fill($validatedData);
+        
+        // Always ensure the admin_id is set (for creation or tracking the last editor)
+        $kontak->admin_id = $admin->id;
+        
+        // Save the record (either creates or updates)
+        $kontak->save();
 
-        return new InformasiKontakResource($kontak->fresh()); // Gunakan fresh() untuk data terbaru
+        return new InformasiKontakResource($kontak->fresh());
     }
 
     /**
