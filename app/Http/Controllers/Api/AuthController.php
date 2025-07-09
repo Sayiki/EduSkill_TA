@@ -312,7 +312,7 @@ class AuthController extends Controller
 
 
         return response()->json([
-            'message' => 'Token reset password tidak valid atau sudah kedaluwarsa.'
+            'message' => 'Link reset password sudah kadaluwarsa'
         ], 400);
     }
 

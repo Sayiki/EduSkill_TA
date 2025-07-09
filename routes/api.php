@@ -35,7 +35,7 @@ use App\Http\Controllers\Api\{
 
 Route::post('/login',  [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/email/verify-now', [AuthController::class, 'verifyNow']);
+Route::post('/verify-now', [AuthController::class, 'verifyNow']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::put('/change-password', [AuthController::class, 'changePassword']);
@@ -63,6 +63,7 @@ Route::apiResource('profile-yayasan', ProfileYayasanController::class)->only(['i
 Route::get('/peserta-alumni', [PesertaController::class, 'getPublicProfiles']);
 
 Route::get('/kategori-pelatihan', [KategoriPelatihanController::class, 'index']);
+Route::get('/kategori-pelatihan/{kategoriPelatihan}', [KategoriPelatihanController::class, 'show']);
 
 // Rute untuk memberitahu pengguna bahwa mereka harus verifikasi email
 Route::get('/email/verify', function () {
@@ -77,9 +78,6 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::get('/documents/{filename}', [FileController::class, 'downloadDocument']);
 
-    Route::post('/resend', [AuthController::class, 'resend'])
-        ->middleware(['throttle:6,1'])->name('verification.send');
-    
     Route::middleware(['peran:peserta'])->group(function () {
         Route::post('/daftar-pelatihan', [DaftarPelatihanController::class, 'store']);
         Route::get('/daftar-pelatihan/current-user', [DaftarPelatihanController::class, 'indexForCurrentUser']);
@@ -90,7 +88,7 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::get('/notifikasi-saya/{notifikasi_id}', [NotifikasiController::class, 'showForCurrentUser']);
         Route::put('/notifikasi-saya/{notifikasi_id}', [NotifikasiController::class, 'updateStatusForCurrentUser']);
         Route::delete('/notifikasi-saya/{notifikasi_id}', [NotifikasiController::class, 'destroyForCurrentUser']);
-        Route::post('/email/resend', [AuthController::class, 'resend'])->name('verification.send');
+        Route::post('/resend', [AuthController::class, 'resend'])->name('verification.send');
             
     });
 
@@ -178,7 +176,7 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('/profile-lkp', [ProfileLKPController::class, 'store']);
         Route::post('/profile-lpk', [ProfileLPKController::class, 'store']);
 
-        Route::apiResource('kategori-pelatihan', KategoriPelatihanController::class)->except(['index']);
+        Route::apiResource('kategori-pelatihan', KategoriPelatihanController::class)->except(['index','show']);
     });  
     
 

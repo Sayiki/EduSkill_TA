@@ -31,40 +31,43 @@ class ProfileYayasanController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi: foto_yayasan adalah string (URL atau path), bukan file upload langsung
+        // 1. FIX THE VALIDATION: Change 'string' to 'image' for file uploads.
         $validatedData = $request->validate([
             'nama_yayasan'      => 'required|string|max:255',
             'deskripsi_yayasan' => 'required|string',
-            'foto_yayasan'      => 'nullable|string|max:2048', // Jika URL, bisa 'url' rule
+            'foto_yayasan'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // Accepts images up to 2MB
         ]);
 
         $loggedInUser = $request->user();
         if (!$loggedInUser || !$loggedInUser->adminProfile) {
-             return response()->json(['message' => 'Akses ditolak atau profil admin tidak ditemukan.'], 403);
+            return response()->json(['message' => 'Akses ditolak atau profil admin tidak ditemukan.'], 403);
         }
         $admin = $loggedInUser->adminProfile;
-        
-        $profile = ProfileYayasan::first();
 
-        // Jika admin upload file baru (perlu penyesuaian jika ingin upload file langsung)
-        // Untuk saat ini, kita asumsikan 'foto_yayasan' adalah string path/URL yang dikirim
-        // Jika Anda ingin mengganti ini dengan upload file, logikanya akan seperti controller Berita/Banner
+        // Find the first profile entry, or create a new one if it doesn't exist.
+        // This is a more concise way to handle both create and update.
+        $profile = ProfileYayasan::firstOrNew();
 
-        if ($profile) {
-            // Jika sudah ada, UPDATE entri yang ada
-            // Jika foto diubah dan yang lama adalah file lokal, hapus yang lama
-            if ($request->filled('foto_yayasan') && $profile->foto_yayasan && !filter_var($profile->foto_yayasan, FILTER_VALIDATE_URL)) {
-                if (Storage::disk('public')->exists($profile->foto_yayasan)) {
-                    Storage::disk('public')->delete($profile->foto_yayasan);
-                }
+        // 2. HANDLE THE FILE UPLOAD
+        if ($request->hasFile('foto_yayasan')) {
+            // If the profile already exists and has an old photo, delete it.
+            if ($profile->exists && $profile->foto_yayasan) {
+                Storage::disk('public')->delete($profile->foto_yayasan);
             }
-            $profile->update($validatedData);
-        } else {
-            // Jika belum ada, CREATE entri baru
-            $validatedData['admin_id'] = $admin->id; // Hanya set admin_id saat pembuatan awal
-            $profile = ProfileYayasan::create($validatedData);
+            
+            // Store the new photo and get its path.
+            $path = $request->file('foto_yayasan')->store('profile-yayasan', 'public');
+            
+            // Save the new photo's path to be stored in the database.
+            $validatedData['foto_yayasan'] = $path;
         }
- 
+
+        // Fill the profile model with validated data and admin_id
+        $profile->fill($validatedData);
+        $profile->admin_id = $admin->id;
+        $profile->save();
+        
+        // Return the fresh data from the database.
         return new ProfileYayasanResource($profile->fresh());
     }
 

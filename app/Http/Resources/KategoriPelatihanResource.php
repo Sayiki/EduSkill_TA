@@ -18,8 +18,8 @@ class KategoriPelatihanResource extends JsonResource
             'id' => $this->id,
             'nama_kategori' => $this->nama_kategori,
             'admin_id' => $this->admin_id,
-            'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at->toDateTimeString(),
+            'created_at' => $this->created_at?->toDateTimeString(),
+            'updated_at' => $this->updated_at?->toDateTimeString(),
         ];
     }
 }
