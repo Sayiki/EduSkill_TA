@@ -238,30 +238,33 @@ class AuthController extends Controller
         return response()->json(['message' => 'Link verifikasi baru telah dikirim ke email Anda.']);
     }
 
-     public function forgotPassword(Request $request)
+    public function forgotPassword(Request $request)
     {
         $request->validate(['email' => 'required|email']);
 
         $user = User::where('email', $request->email)->first();
 
+        // --- UPDATED LOGIC ---
+        // Jika user dengan email tersebut tidak ditemukan di database.
         if (!$user) {
-            // Selalu kembalikan pesan generik untuk keamanan
+            // Kembalikan pesan error yang jelas dengan status 404 (Not Found).
             return response()->json([
-                'message' => 'Jika email Anda terdaftar, kami telah mengirimkan tautan untuk mengatur ulang kata sandi Anda.'
-            ], 200);
+                'message' => 'Email yang Anda masukkan tidak terdaftar.'
+            ], 404);
         }
 
+        // Jika email user belum terverifikasi.
         if (!$user->hasVerifiedEmail()) {
             return response()->json([
                 'message' => 'Email Anda belum terverifikasi. Silakan verifikasi terlebih dahulu.'
-            ], 422);
+            ], 422); // 422 Unprocessable Entity
         }
 
         try {
-            // 1. Buat token secara manual
+            // 1. Buat token reset password secara manual.
             $token = PasswordFacade::broker()->createToken($user);
             
-            // 2. Kirim notifikasi ke user (ini akan memanggil metode sendPasswordResetNotification di model User)
+            // 2. Kirim notifikasi ke user (ini akan memanggil metode sendPasswordResetNotification di model User).
             $user->sendPasswordResetNotification($token);
 
             return response()->json([
@@ -269,7 +272,7 @@ class AuthController extends Controller
             ], 200);
 
         } catch (\Exception $e) {
-            \Log::error('Gagal mengirim email reset password: ' . $e->getMessage());
+            Log::error('Gagal mengirim email reset password: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Terjadi kesalahan pada server saat mencoba mengirim email.'
             ], 500);
