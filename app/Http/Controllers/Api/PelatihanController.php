@@ -55,7 +55,7 @@ class PelatihanController extends Controller
         $validatedData = $request->validate([
             'nama_pelatihan'       => 'required|string|max:100',
             'keterangan_pelatihan' => 'required|string|max:350',
-            'foto_pelatihan'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'foto_pelatihan'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'biaya'                => 'required|required|integer',
             'kategori_id'          => 'required|integer|exists:kategori_pelatihan,id',
             'jumlah_kuota'         => 'required|integer|min:1',
@@ -109,7 +109,7 @@ class PelatihanController extends Controller
         $validatedData = $request->validate([
             'nama_pelatihan'       => 'sometimes|required|string|max:100',
             'keterangan_pelatihan' => 'sometimes|required|string|max:350',
-            'foto_pelatihan'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'foto_pelatihan'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'kategori_id'          => 'sometimes|required|integer|exists:kategori_pelatihan,id',
             'biaya'                => 'sometimes|required|integer',
             'jumlah_kuota'         => 'sometimes|required|integer|min:1',
