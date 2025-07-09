@@ -360,8 +360,10 @@ class AuthController extends Controller
                 'different:current_password', 
         
                 Password::min(8)
-                    ->mixedCase()
-                    ->numbers()
+                        ->letters()
+                        ->mixedCase()
+                        ->numbers()
+                        ->symbols()
             ],
         ]);
 
