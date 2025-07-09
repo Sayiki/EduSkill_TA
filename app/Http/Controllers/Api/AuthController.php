@@ -357,7 +357,8 @@ class AuthController extends Controller
                 'required',
                 'string',
                 'confirmed', 
-                'different:current_password', 
+                'different:current_password',
+                'max:20',
         
                 Password::min(8)
                         ->letters()
