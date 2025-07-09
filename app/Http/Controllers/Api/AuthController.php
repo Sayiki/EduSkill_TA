@@ -76,10 +76,10 @@ class AuthController extends Controller
         try {
             $data = $request->validate([
                 'email' => 'required|email|unique:users,email',
-                'username' => 'required|string|unique:users,username',
-                'name' => 'required|string',
-                'nomor_telp' => 'required|string|min:8|max:12',
-                'password' => ['required', 'confirmed',
+                'username' => 'required|string||min:5|max:100|unique:users,username',
+                'name' => 'required|string|min:5|max:100',
+                'nomor_telp' => 'required|string|min:10|max:12',
+                'password' => ['required', 'confirmed', 'max:20',
                     Password::min(8)
                         ->letters()
                         ->mixedCase()
@@ -285,7 +285,7 @@ class AuthController extends Controller
         $request->validate([
             'token'    => 'required|string',
             'email'    => 'required|email',
-            'password' => ['required', 'confirmed',
+            'password' => ['required', 'confirmed', 'max:20',
                     Password::min(8)
                         ->letters()
                         ->mixedCase()

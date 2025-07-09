@@ -29,7 +29,7 @@ class SlideshowController extends Controller
     {
         $validatedData = $request->validate([
             'nama_slide' => 'required|string|max:255',
-            'gambar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10000', // Max 2MB
+            'gambar' => 'required|image|mimes:jpeg,png,jpg|max:5120', // Max 2MB
         ]);
 
         $loggedInUser = $request->user();
@@ -74,7 +74,7 @@ class SlideshowController extends Controller
 
         $validatedData = $request->validate([
             'nama_slide' => 'sometimes|required|string|max:255',
-            'gambar' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10000',
+            'gambar' => 'sometimes|nullable|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         if ($request->hasFile('gambar')) {

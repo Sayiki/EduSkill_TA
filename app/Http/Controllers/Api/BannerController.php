@@ -34,7 +34,7 @@ class BannerController extends Controller
     {
         $validatedData = $request->validate([
             'nama_banner' => 'required|string|max:255',
-            'gambar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10000', 
+            'gambar' => 'required|image|mimes:jpeg,png,jpg|max:5120', 
         ]);
 
         $loggedInUser = $request->user();
@@ -79,7 +79,7 @@ class BannerController extends Controller
 
         $validatedData = $request->validate([
             'nama_banner' => 'sometimes|required|string|max:255',
-            'gambar' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10000',
+            'gambar' => 'sometimes|nullable|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         if ($request->hasFile('gambar')) {

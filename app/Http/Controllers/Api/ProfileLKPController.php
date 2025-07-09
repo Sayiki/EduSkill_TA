@@ -41,9 +41,9 @@ class ProfileLKPController extends Controller
 
         // 1. FIX THE VALIDATION: Change 'string' to 'image' for file uploads.
         $validatedData = $request->validate([
-            'nama_lkp'      => 'required|string|max:255',
-            'deskripsi_lkp' => 'required|string',
-            'foto_lkp'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // Accepts images up to 2MB
+            'nama_lkp'      => 'required|string|min:5|max:100',
+            'deskripsi_lkp' => 'required|string|min:5|max:350',
+            'foto_lkp'      => 'nullable|image|mimes:jpg,jpeg,png|max:5120', 
         ]);
         
         $validatedData['lembaga_id'] = $informasiLembaga->id;
@@ -104,7 +104,7 @@ class ProfileLKPController extends Controller
             // 'lembaga_id' tidak lagi divalidasi dari request
             'nama_lkp'      => 'sometimes|required|string|max:255',
             'deskripsi_lkp' => 'sometimes|required|string',
-            'foto_lkp'      => 'sometimes|nullable|string|max:2048',
+            'foto_lkp'      => 'sometimes|nullable|string|max:5120',
         ]);
 
         // Tambahkan lembaga_id secara otomatis

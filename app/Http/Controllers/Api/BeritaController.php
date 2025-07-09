@@ -33,7 +33,7 @@ class BeritaController extends Controller
             'title' => 'required|string|max:255',
             'deskripsi' => 'required|string',
             'date' => 'required|date_format:Y-m-d',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Max 2MB
+            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120', 
         ]);
 
         // Dapatkan profil Admin dari User yang login
@@ -85,7 +85,7 @@ class BeritaController extends Controller
             'title' => 'sometimes|required|string|max:255',
             'deskripsi' => 'sometimes|required|string',
             'date' => 'sometimes|required|date_format:Y-m-d',
-            'gambar' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'gambar' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
         ]);
 
         if ($request->hasFile('gambar')) {

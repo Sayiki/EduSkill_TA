@@ -41,9 +41,9 @@ class ProfileLPKController extends Controller
 
         // 1. FIX THE VALIDATION: Change 'string' to 'image' for file uploads.
         $validatedData = $request->validate([
-            'nama_lpk'      => 'required|string|max:255',
-            'deskripsi_lpk' => 'required|string',
-            'foto_lpk'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // Accepts images up to 2MB
+            'nama_lpk'      => 'required|string|min:5|max:100',
+            'deskripsi_lpk' => 'required|string|min:5|max:350',
+            'foto_lpk'      => 'nullable|image|mimes:jpg,jpeg,png|max:5120', // Accepts images up to 2MB
         ]);
         
         $validatedData['lembaga_id'] = $informasiLembaga->id;

@@ -30,8 +30,8 @@ class InformasiGaleriController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'judul_foto' => 'required|string|max:255',
-            'file_foto'   => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:10000', 
+            'judul_foto' => 'required|string|min:5|max:100',
+            'file_foto'   => 'required|image|mimes:jpeg,png,jpg|max:5120', 
         ]);
 
         $loggedInUser = $request->user();
@@ -73,7 +73,7 @@ class InformasiGaleriController extends Controller
         $validatedData = $request->validate([
             'judul_foto' => 'sometimes|required|string|max:255',
             // UBAH VALIDASI: dari 'url' menjadi 'image' jika admin bisa ganti file
-            'file_foto'   => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:10000',
+            'file_foto'   => 'sometimes|nullable|image|mimes:jpeg,png,jpg|max:5120',
         ]);
 
         // TAMBAHKAN LOGIKA UPDATE FILE
