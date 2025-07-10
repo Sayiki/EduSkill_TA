@@ -15,16 +15,11 @@ class LaporanAdmin extends Model
 
     protected $fillable = [
         'admin_id',
-        'waktu_upload', 
-        'jumlah_peserta',
-        'jumlah_lulusan_bekerja', 
-        'jumlah_pendaftar',
-        'pelatihan_dibuka',
-        'pelatihan_berjalan',
+        'laporan_file',
+        'laporan_deskripsi'
     ];
 
     protected $casts = [
-        'waktu_upload' => 'datetime', // Pastikan ini ada
         'created_at' => 'datetime',   // Eloquent biasanya menangani ini, tapi menambahkannya tidak masalah
         'updated_at' => 'datetime',   // Sama seperti created_at
     ];

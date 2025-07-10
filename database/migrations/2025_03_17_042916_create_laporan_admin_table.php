@@ -21,6 +21,8 @@ return new class extends Migration
             // The description of the report. Using TEXT allows for longer descriptions.
             $table->text('laporan_deskripsi');
 
+            $table->string('laporan_file')->nullable();
+
             // The standard 'created_at' and 'updated_at' timestamp columns.
             $table->timestamps();
 

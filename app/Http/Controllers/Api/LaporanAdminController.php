@@ -8,7 +8,8 @@ use App\Models\Admin; // Make sure Admin model is correctly namespaced if used d
 use Illuminate\Http\Request;
 use App\Http\Resources\LaporanAdminResource;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // This line is correct
+use Illuminate\Support\Facades\Storage; 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests; 
 
 class LaporanAdminController extends Controller
 {
@@ -63,16 +64,31 @@ class LaporanAdminController extends Controller
             return response()->json(['message' => 'Profil admin tidak ditemukan.'], 403);
         }
 
+    
         $validatedData = $request->validate([
             'laporan_deskripsi' => 'required|string',
+            'laporan_file'      => 'nullable|file|mimes:pdf|max:5120',
         ]);
         
-        // Use firstOrNew and save() to explicitly set the attributes.
-        // This bypasses mass assignment issues if 'laporan_deskripsi' is not in the $fillable array.
+    
         $laporan = LaporanAdmin::firstOrNew(['admin_id' => $admin->id]);
         $laporan->laporan_deskripsi = $validatedData['laporan_deskripsi'];
+
+     
+        if ($request->hasFile('laporan_file')) {
+         
+            if ($laporan->laporan_file && Storage::disk('public')->exists($laporan->laporan_file)) {
+                Storage::disk('public')->delete($laporan->laporan_file);
+            }
+
+          
+            $filePath = $request->file('laporan_file')->store('laporan_files', 'public');
+            $laporan->laporan_file = $filePath;
+        }
+        
         $laporan->save();
 
+      
         return new LaporanAdminResource($laporan->load('admin.user'));
     }
 
@@ -99,6 +115,19 @@ class LaporanAdminController extends Controller
 
     public function destroy(Request $request, $laporan_id) 
     {
+    
+        $laporanAdmin = LaporanAdmin::find($laporan_id);
+
+        if (!$laporanAdmin) {
+            return response()->json(['message' => 'Laporan Admin tidak ditemukan'], 404);
+        }
+
+
+        if ($laporanAdmin->laporan_file && Storage::disk('public')->exists($laporanAdmin->laporan_file)) {
+            Storage::disk('public')->delete($laporanAdmin->laporan_file);
+        }
+
+      
         $laporanAdmin->delete();
 
         return response()->json(['message' => 'Laporan Admin berhasil dihapus'], 200);
