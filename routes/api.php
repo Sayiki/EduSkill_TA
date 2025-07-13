@@ -182,6 +182,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     
 
     Route::middleware(['peran:ketua'])->group(function () {
+        Route::get('/ketuadashboard', [KetuaController::class, 'getDashboardData']);
         Route::get('/laporan-admin', [LaporanAdminController::class, 'index']);
         Route::get('/laporan-admin/{id}', [LaporanAdminController::class, 'showLaporanByIdForKetua']);
         Route::delete('/laporan-admin/{id}', [LaporanAdminController::class, 'destroy']);

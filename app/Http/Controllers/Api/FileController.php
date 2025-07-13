@@ -30,7 +30,7 @@ class FileController extends Controller
     public function showDocument(Request $request, $filename)
     {
         // This assumes your files are in `storage/app/public/documents/daftar_pelatihan`
-        $path = 'documents/daftar_pelatihan/' . $filename;
+        $path = $filename;
 
         // Check if the file exists on the 'public' disk
         if (!Storage::disk('public')->exists($path)) {

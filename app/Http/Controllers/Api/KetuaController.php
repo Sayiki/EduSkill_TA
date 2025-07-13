@@ -5,6 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Ketua;
+use Illuminate\Support\Facades\DB;
+use App\Models\DaftarPelatihan;
+use App\Models\Pelatihan;
+use App\Models\Peserta;        
+use App\Models\Feedback;       
+use App\Models\LaporanAdmin;  
 
 class KetuaController extends Controller
 {
@@ -74,6 +80,40 @@ class KetuaController extends Controller
 
         return response()->json([
             'message' => 'Ketua berhasil dihapus.',
+        ]);
+    }
+
+    public function getDashboardData(Request $request)
+    {
+        // 1. Hitung Statistik berdasarkan definisi Anda
+        $jumlahPendaftar = DB::table('daftar_pelatihan')->count();
+        $jumlahPeserta = DB::table('daftar_pelatihan')->where('status', 'diterima')->count();
+        // Asumsi status lulus adalah 'lulus'. Sesuaikan jika berbeda.
+        $jumlahAlumni = DB::table('peserta')->where('status_lulus', 'lulus')->count();
+        $totalPelatihan = Pelatihan::count();
+
+        // 2. Ambil data untuk tabel (misalnya, 5 data terbaru)
+        $pelatihanData = Pelatihan::with('kategori')->latest()->take(5)->get();
+        $laporanAdminData = LaporanAdmin::with('admin.user:id,name')->latest()->take(5)->get();
+        $tempatKerjaData = Feedback::with('peserta.user:id,name')
+                                    ->whereNotNull('tempat_kerja')
+                                    ->latest()
+                                    ->take(5)
+                                    ->get();
+
+        // 3. Kembalikan semua data dalam satu response JSON
+        return response()->json([
+            'stats' => [
+                'jumlahPendaftar' => $jumlahPendaftar,
+                'jumlahPeserta' => $jumlahPeserta,
+                'totalPelatihan' => $totalPelatihan,
+                'jumlahAlumni' => $jumlahAlumni,
+            ],
+            'tables' => [
+                'pelatihan' => $pelatihanData,
+                'laporanAdmin' => $laporanAdminData,
+                'tempatKerja' => $tempatKerjaData,
+            ]
         ]);
     }
 }
