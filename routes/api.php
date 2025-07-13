@@ -77,6 +77,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::get('/documents/{filename}', [FileController::class, 'downloadDocument']);
+    Route::get('/documents-view/{filename}', [FileController::class, 'showDocument'])->where('filename', '.*');
 
     Route::middleware(['peran:peserta'])->group(function () {
         Route::post('/daftar-pelatihan', [DaftarPelatihanController::class, 'store']);
