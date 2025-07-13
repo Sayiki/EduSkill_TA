@@ -5,6 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Admin;
+use App\Models\DaftarPelatihan;
+use App\Models\Pelatihan;
+use App\Models\Peserta;        
+use App\Models\Feedback;       
+use App\Models\LaporanAdmin;  
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -93,6 +100,38 @@ class AdminController extends Controller
 
         return response()->json([
             'message' => 'Admin dan User terkait berhasil dihapus',
+        ]);
+    }
+
+    public function getDashboardData(Request $request)
+    {
+      
+        $jumlahPendaftar = DB::table('daftar_pelatihan')->count();
+        $jumlahPeserta = DB::table('daftar_pelatihan')->where('status', 'diterima')->count();
+       
+        $jumlahAlumni = DB::table('peserta')->where('status_lulus', 'lulus')->count();
+        $totalPelatihan = Pelatihan::count();
+
+      
+        $pelatihanData = Pelatihan::with('kategori')->latest()->get();
+        $tempatKerjaData = Feedback::with('peserta.user:id,name')
+                                    ->whereNotNull('tempat_kerja')
+                                    ->where('status', 'ditampilkan')
+                                    ->latest()
+                                    ->get();
+
+  
+        return response()->json([
+            'stats' => [
+                'jumlahPendaftar' => $jumlahPendaftar,
+                'jumlahPeserta' => $jumlahPeserta,
+                'totalPelatihan' => $totalPelatihan,
+                'jumlahAlumni' => $jumlahAlumni,
+            ],
+            'tables' => [
+                'pelatihan' => $pelatihanData,
+                'tempatKerja' => $tempatKerjaData,
+            ]
         ]);
     }
 

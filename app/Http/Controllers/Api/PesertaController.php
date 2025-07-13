@@ -74,13 +74,9 @@ class PesertaController extends Controller
             'alamat_peserta' => ['nullable', 'string', 'max:1000'],
             'nomor_telp' => ['nullable', 'string', 'max:20'],
             'tanggal_lahir' => ['nullable', 'date'],
-            'foto_peserta' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'], // Max 2MB
             'pendidikan_id' => ['nullable', 'integer', 'exists:pendidikan,id'],
         ]);
 
-        if ($request->hasFile('foto_peserta')) {
-            $data['foto_peserta'] = $request->file('foto_peserta')->store('foto_profil_peserta', 'public');
-        }
 
         $peserta = Peserta::create($data);
 
@@ -136,10 +132,8 @@ class PesertaController extends Controller
             'alamat_peserta' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'nomor_telp' => ['sometimes', 'nullable', 'string', 'max:20'],
             'tanggal_lahir' => ['sometimes', 'nullable', 'date'],
-            'foto_peserta' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
             'pendidikan_id' => ['sometimes', 'nullable', 'integer', 'exists:pendidikan,id'],
             'status_kerja' => ['sometimes', 'nullable', Rule::in(['bekerja', 'belum_bekerja', 'kuliah', 'wirausaha', 'tidak_diketahui'])],
-            'remove_foto_peserta' => ['sometimes', 'boolean'],
         ]);
 
         try {
@@ -157,17 +151,6 @@ class PesertaController extends Controller
                     'nik_peserta', 'jenis_kelamin', 'alamat_peserta', 'nomor_telp',
                     'tanggal_lahir', 'status_kerja', 'pendidikan_id'
                 ]);
-
-                if ($request->hasFile('foto_peserta')) {
-                    if ($peserta->foto_peserta) {
-                        Storage::disk('public')->delete($peserta->foto_peserta);
-                    }
-                    $path = $request->file('foto_peserta')->store('foto_profil_peserta', 'public');
-                    $pesertaDataToUpdate['foto_peserta'] = $path;
-                } elseif ($request->input('remove_foto_peserta') && $peserta->foto_peserta) {
-                    Storage::disk('public')->delete($peserta->foto_peserta);
-                    $pesertaDataToUpdate['foto_peserta'] = null;
-                }
                 
                 $peserta->update($pesertaDataToUpdate);
             });
@@ -200,10 +183,8 @@ class PesertaController extends Controller
             'alamat_peserta' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'nomor_telp' => ['sometimes', 'nullable', 'string', 'min:10','max:12'],
             'tanggal_lahir' => ['sometimes', 'nullable', 'date'],
-            'foto_peserta' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
             'pendidikan_id' => ['sometimes', 'nullable', 'integer', 'exists:pendidikan,id'],
             'status_kerja' => ['sometimes', 'nullable', Rule::in(['bekerja', 'belum_bekerja', 'kuliah', 'wirausaha', 'tidak_diketahui'])],
-            'remove_foto_peserta' => ['sometimes', 'boolean'],
         ]);
 
         try {
@@ -225,17 +206,6 @@ class PesertaController extends Controller
                     'tanggal_lahir', 'status_kerja', 'pendidikan_id'
                 ]);
 
-                // Logika handle upload foto
-                if ($request->hasFile('foto_peserta')) {
-                    if ($peserta->foto_peserta) {
-                        Storage::disk('public')->delete($peserta->foto_peserta);
-                    }
-                    $path = $request->file('foto_peserta')->store('foto_profil_peserta', 'public');
-                    $pesertaDataToUpdate['foto_peserta'] = $path;
-                } elseif ($request->input('remove_foto_peserta') && $peserta->foto_peserta) {
-                    Storage::disk('public')->delete($peserta->foto_peserta);
-                    $pesertaDataToUpdate['foto_peserta'] = null;
-                }
                 
                 $peserta->update($pesertaDataToUpdate);
             });
@@ -259,10 +229,6 @@ class PesertaController extends Controller
 
         $user = $peserta->user;
 
-        // Hapus foto dari storage jika ada
-        if ($peserta->foto_peserta && Storage::disk('public')->exists($peserta->foto_peserta)) {
-            Storage::disk('public')->delete($peserta->foto_peserta);
-        }
 
         if ($user) {
         try {
@@ -309,7 +275,6 @@ class PesertaController extends Controller
                 $query->whereNotNull('tempat_kerja')->where('status', 'Ditampilkan');
             })
             
-            ->whereNotNull('foto_peserta')
             ->inRandomOrder()
             ->limit(5)
             ->get();

@@ -178,6 +178,8 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::post('/profile-lpk', [ProfileLPKController::class, 'store']);
 
         Route::apiResource('kategori-pelatihan', KategoriPelatihanController::class)->except(['index','show']);
+
+        Route::get('/admindashboard', [AdminController::class, 'getDashboardData']);
     });  
     
 

@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('peserta', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); 
-            $table->string('foto_peserta')->nullable();
             $table->string('nik_peserta', 100)->nullable();
             $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan'])->nullable();
             $table->date('tanggal_lahir')->nullable();

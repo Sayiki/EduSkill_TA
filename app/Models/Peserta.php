@@ -15,7 +15,6 @@ class Peserta extends Model
 
     protected $fillable = [
         'user_id',
-        'foto_peserta',
         'nik_peserta',
         'jenis_kelamin',
         'tanggal_lahir', 

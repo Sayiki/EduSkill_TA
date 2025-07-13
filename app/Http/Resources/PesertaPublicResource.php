@@ -17,7 +17,7 @@ class PesertaPublicResource extends JsonResource
         return [
             // Hanya sertakan data yang aman untuk publik
             'nama_peserta' => $this->user->name, // Ambil nama dari relasi user
-            'foto_peserta' => $this->foto_peserta,
+            'foto_peserta' => $this->daftarPelatihan?->foto, 
             'tempat_kerja' => $this->feedback?->tempat_kerja,
    
         ];

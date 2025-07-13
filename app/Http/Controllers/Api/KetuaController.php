@@ -93,12 +93,12 @@ class KetuaController extends Controller
         $totalPelatihan = Pelatihan::count();
 
         // 2. Ambil data untuk tabel (misalnya, 5 data terbaru)
-        $pelatihanData = Pelatihan::with('kategori')->latest()->take(5)->get();
-        $laporanAdminData = LaporanAdmin::with('admin.user:id,name')->latest()->take(5)->get();
+        $pelatihanData = Pelatihan::with('kategori')->latest()->get();
+        $laporanAdminData = LaporanAdmin::with('admin.user:id,name')->latest()->get();
         $tempatKerjaData = Feedback::with('peserta.user:id,name')
                                     ->whereNotNull('tempat_kerja')
+                                    ->where('status', 'ditampilkan')
                                     ->latest()
-                                    ->take(5)
                                     ->get();
 
         // 3. Kembalikan semua data dalam satu response JSON
