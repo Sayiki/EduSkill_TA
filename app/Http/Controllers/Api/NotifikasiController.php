@@ -176,4 +176,109 @@ class NotifikasiController extends Controller
 
         return response()->json(['message' => 'Notifikasi berhasil dihapus.'], 200);
     }
+
+    /**
+     * (Untuk Admin) Menampilkan daftar pengumuman yang pernah dikirim
+     * GET /api/pengumuman
+     */
+    public function index(Request $request)
+    {
+        $perPage = $request->query('per_page', 10);
+        
+        // Ambil pengumuman unik berdasarkan judul dan pesan
+        // Group by untuk menghindari duplikasi per peserta
+        $pengumuman = Notifikasi::select('judul', 'pesan', 'created_at')
+                        ->selectRaw('MIN(id) as id, COUNT(*) as target_count')
+                        ->groupBy('judul', 'pesan', 'created_at')
+                        ->orderBy('created_at', 'desc')
+                        ->paginate($perPage);
+        
+        // Transform data untuk frontend
+        $pengumumanData = $pengumuman->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'judul' => $item->judul,
+                'pesan' => $item->pesan,
+                'pengirim' => 'Admin', // Default sender
+                'target_count' => $item->target_count,
+                'created_at' => $item->created_at,
+            ];
+        });
+
+        return response()->json([
+            'data' => $pengumumanData,
+            'current_page' => $pengumuman->currentPage(),
+            'last_page' => $pengumuman->lastPage(),
+            'total' => $pengumuman->total(),
+            'per_page' => $pengumuman->perPage(),
+        ]);
+    }
+
+    /**
+     * (Untuk Admin) Mengupdate pengumuman
+     * PUT /api/pengumuman/{id}
+     */
+    public function update(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'judul' => 'required|string|max:1000',
+            'pesan' => 'required|string|max:1000',
+            'pengirim' => 'nullable|string|max:255',
+        ]);
+
+        // Cari notifikasi berdasarkan ID
+        $notifikasi = Notifikasi::find($id);
+        
+        if (!$notifikasi) {
+            return response()->json(['message' => 'Pengumuman tidak ditemukan.'], 404);
+        }
+
+        // Update semua notifikasi dengan judul dan pesan yang sama
+        $oldJudul = $notifikasi->judul;
+        $oldPesan = $notifikasi->pesan;
+        
+        $updated = Notifikasi::where('judul', $oldJudul)
+                            ->where('pesan', $oldPesan)
+                            ->update([
+                                'judul' => $validatedData['judul'],
+                                'pesan' => $validatedData['pesan'],
+                                'updated_at' => now(),
+                            ]);
+
+        return response()->json([
+            'message' => "Pengumuman berhasil diperbarui untuk {$updated} peserta.",
+            'data' => [
+                'id' => $id,
+                'judul' => $validatedData['judul'],
+                'pesan' => $validatedData['pesan'],
+                'pengirim' => $validatedData['pengirim'] ?? 'Admin',
+            ]
+        ]);
+    }
+
+    /**
+     * (Untuk Admin) Menghapus pengumuman
+     * DELETE /api/pengumuman/{id}
+     */
+    public function destroy($id)
+    {
+        // Cari notifikasi berdasarkan ID
+        $notifikasi = Notifikasi::find($id);
+        
+        if (!$notifikasi) {
+            return response()->json(['message' => 'Pengumuman tidak ditemukan.'], 404);
+        }
+
+        // Hapus semua notifikasi dengan judul dan pesan yang sama
+        $oldJudul = $notifikasi->judul;
+        $oldPesan = $notifikasi->pesan;
+        
+        $deleted = Notifikasi::where('judul', $oldJudul)
+                            ->where('pesan', $oldPesan)
+                            ->delete();
+
+        return response()->json([
+            'message' => "Pengumuman berhasil dihapus untuk {$deleted} peserta."
+        ]);
+    }
 }

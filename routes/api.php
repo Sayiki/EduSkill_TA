@@ -161,6 +161,9 @@ Route::middleware(['jwt.auth'])->group(function () {
 
         // Notifikasi announcement
         Route::post('/notifikasi-pengumuman', [NotifikasiController::class, 'sendAnnouncementToAllPeserta']);
+        Route::get('/pengumuman', [NotifikasiController::class, 'index']);
+        Route::put('/pengumuman/{id}', [NotifikasiController::class, 'update']);
+        Route::delete('/pengumuman/{id}', [NotifikasiController::class, 'destroy']);
 
         // Pelatihan
         Route::post('/pelatihan', [PelatihanController::class, 'store']);
