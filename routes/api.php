@@ -76,7 +76,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/user', [AuthController::class, 'user']); // Rute untuk mendapatkan detail user yang sedang login
 
     Route::post('refresh', [AuthController::class, 'refresh']);
-    Route::get('/documents/{filename}', [FileController::class, 'downloadDocument']);
+    Route::get('/documents/{filename}', [FileController::class, 'downloadDocument'])->where('filename', '.*');
     Route::get('/documents-view/{filename}', [FileController::class, 'showDocument'])->where('filename', '.*');
 
     Route::middleware(['peran:peserta'])->group(function () {
