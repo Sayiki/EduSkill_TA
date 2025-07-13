@@ -20,7 +20,7 @@ class FileController extends Controller
             Log::warning('Auth Check: FALSE. Possible JWT failure.');
         }
 
-        $path = 'documents/daftar_pelatihan/' . $filename;
+        $path = $filename;
         if (Storage::disk('public')->exists($path)) {
             return response()->file(Storage::disk('public')->path($path));
         }
@@ -29,7 +29,7 @@ class FileController extends Controller
 
     public function showDocument(Request $request, $filename)
     {
-        // This assumes your files are in `storage/app/public/documents/daftar_pelatihan`
+
         $path = $filename;
 
         // Check if the file exists on the 'public' disk
