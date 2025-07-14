@@ -27,4 +27,10 @@ class Mentor extends Model
     {
         return $this->hasMany(Pelatihan::class, 'mentor_id');
     }
+
+    public function user()
+    {
+        // Asumsi: tabel 'mentors' memiliki foreign key 'user_id'
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

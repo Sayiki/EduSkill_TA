@@ -13,6 +13,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB; // Import DB facade for transactions
 use Illuminate\Support\Facades\Log; // Optional: for logging
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Builder;
 
 class PelatihanController extends Controller
 {

@@ -4,22 +4,44 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Mentor;
-use App\Models\Admin; // Pastikan model Admin di-import
+use App\Models\Admin; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\MentorResource;
+use Illuminate\Database\Eloquent\Builder; 
 
 class MentorController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    
     public function index(Request $request)
     {
+        // 1. Ambil parameter dari query string
         $perPage = $request->query('per_page', 10);
-        $mentors = Mentor::latest()->paginate($perPage);
+        $searchTerm = $request->query('search');
 
-        return MentorResource::collection($mentors);
+        // 2. Mulai membangun query dengan eager loading
+        $query = Mentor::with(['user']);
+
+        // 3. Terapkan filter pencarian jika ada
+        if ($searchTerm) {
+            $query->where(function (Builder $q) use ($searchTerm) {
+                $q->whereHas('user', function (Builder $q_user) use ($searchTerm) {
+                    $q_user->where('name', 'like', '%' . $searchTerm . '%');
+                })
+                ->orWhere('bidang_keahlian', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        $query->latest();
+
+        // 4. Paginate the results
+        $paginator = $query->paginate($perPage);
+
+        // 5. Return the paginated response (Laravel automatically formats this correctly)
+        return response()->json($paginator);
     }
 
     /**
