@@ -6,12 +6,10 @@
 *Layanan backend untuk Sistem Informasi Lembaga Pendidikan Non-Formal Bina Essa*
 
 [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
-[![Laravel](https://img.shields.io/badge/Laravel-10.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com)
 [![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-
-[🌟 Fitur Utama](#-fitur-utama) • [🚀 Mulai Cepat](#-instalasi-cepat) • [📚 Dokumentasi API](#-dokumentasi-api) • [🤝 Kontribusi](#-kontribusi)
 
 ---
 
