@@ -7,55 +7,85 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+Backend RESTful API untuk Aplikasi Web EduSkill
+Ini adalah repositori untuk layanan backend dari aplikasi EduSkill, sebuah sistem informasi untuk Lembaga Pendidikan Non-Formal Bina Essa. Proyek ini dikembangkan sebagai bagian dari Tugas Akhir untuk memenuhi syarat kelulusan Program Studi S1 Rekayasa Perangkat Lunak, Fakultas Informatika, Universitas Telkom.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Penulis: Arzaq Ajradika (1302210096)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Fitur Utama
+Manajemen Pengguna & Peran: Sistem autentikasi dan otorisasi berbasis peran menggunakan JWT untuk tiga jenis pengguna: Admin, Ketua, dan Peserta.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Pengelolaan Pelatihan: Operasi CRUD (Create, Read, Update, Delete) untuk data pelatihan, termasuk informasi mentor, kategori, dan dll.
 
-## Learning Laravel
+Pendaftaran Peserta: Alur pendaftaran bagi peserta untuk mengikuti pelatihan yang tersedia.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Sistem Notifikasi: Mengirimkan notifikasi kepada pengguna terkait status pendaftaran atau pengumuman penting.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Manajemen Konten: Pengelolaan konten dinamis seperti berita, banner, galeri, dan profil lembaga.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Pelaporan: Fitur bagi admin untuk membuat laporan yang dapat diakses oleh ketua lembaga.
 
-## Laravel Sponsors
+Panduan Instalasi
+Berikut adalah langkah-langkah untuk menjalankan proyek ini di lingkungan lokal.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Prasyarat
+PHP >= 12
 
-### Premium Partners
+Composer
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development/)**
-- **[Active Logic](https://activelogic.com)**
+Server Database (MySQL)
 
-## Contributing
+Git
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Langkah-langkah Instalasi
+Clone repositori ini:
 
-## Code of Conduct
+git clone https://github.com/Sayiki/EduSkill_TA
+cd EduSkillBE
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Install dependensi PHP menggunakan Composer:
 
-## Security Vulnerabilities
+composer install
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Salin file .env.example menjadi .env:
 
-## License
+cp .env.example .env
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Buat kunci aplikasi (APP_KEY):
+
+php artisan key:generate
+
+Konfigurasi koneksi database di dalam file .env:
+Sesuaikan variabel berikut dengan konfigurasi database lokal Anda.
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=eduskill
+DB_USERNAME=root
+DB_PASSWORD=
+
+Jalankan migrasi untuk membuat tabel dan isi data awal (seeding):
+
+php artisan migrate --seed
+
+Jalankan server pengembangan lokal:
+
+php artisan serve
+
+Aplikasi sekarang akan berjalan di http://127.0.0.1:8000.
+
+Dokumentasi API
+Seluruh endpoint API telah diuji menggunakan Postman. Dokumentasi lengkap untuk setiap endpoint, termasuk path, metode HTTP, dan contoh request/response, tersedia di dalam dokumen Tugas Akhir.
+
+Contoh Endpoint
+POST /api/login: Autentikasi pengguna (Admin, Ketua, Peserta).
+
+POST /api/register: Membuat akun baru untuk Peserta.
+
+GET /api/pelatihan: Mengambil semua data pelatihan (Akses Publik).
+
+POST /api/daftar-pelatihan/{id}: Mendaftarkan peserta ke sebuah pelatihan (Membutuhkan Autentikasi).
+
+Status Proyek
+Proyek ini telah selesai dikembangkan dan diuji fungsionalitasnya sebagai bagian dari pemenuhan Tugas Akhir.
