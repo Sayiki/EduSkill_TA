@@ -60,7 +60,7 @@ Fakultas Informatika, Universitas Telkom*
 
 | Kategori | Teknologi |
 |----------|-----------|
-| **Framework** | ![Laravel](https://img.shields.io/badge/Laravel-10-red?logo=laravel) |
+| **Framework** | ![Laravel](https://img.shields.io/badge/Laravel-12-red?logo=laravel) |
 | **Bahasa** | ![PHP](https://img.shields.io/badge/PHP-8.1%2B-blue?logo=php) |
 | **Database** | ![MySQL](https://img.shields.io/badge/MySQL-8.0-orange?logo=mysql) |
 | **Autentikasi** | ![JWT](https://img.shields.io/badge/JWT-Auth-black?logo=jsonwebtokens) |
@@ -71,7 +71,7 @@ Fakultas Informatika, Universitas Telkom*
 ### 📋 Prasyarat
 
 Pastikan Anda memiliki software berikut:
-- ![PHP](https://img.shields.io/badge/PHP-≥8.1-blue?style=flat-square&logo=php) PHP 12 atau lebih tinggi
+- ![PHP](https://img.shields.io/badge/PHP-≥8.1-blue?style=flat-square&logo=php) PHP 8.1 atau lebih tinggi
 - ![Composer](https://img.shields.io/badge/Composer-Terbaru-brown?style=flat-square&logo=composer) Composer
 - ![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square&logo=mysql) MySQL Server
 - ![Git](https://img.shields.io/badge/Git-Terbaru-red?style=flat-square&logo=git) Git
