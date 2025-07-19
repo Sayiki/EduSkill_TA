@@ -1,139 +1,200 @@
+# 🎓 EduSkill Backend API
+
 <div align="center">
-<br />
-<h1>Backend RESTful API untuk Aplikasi Web EduSkill</h1>
-<p>
-Layanan backend untuk sistem informasi Lembaga Pendidikan Non-Formal Bina Essa.
-</p>
+
+### 🚀 RESTful API for EduSkill Web Application
+*Backend service for Bina Essa Non-Formal Educational Institution Information System*
+
+[![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-10.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com)
+[![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)](https://jwt.io)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+
+[🌟 Features](#-key-features) • [🚀 Quick Start](#-quick-start) • [📚 API Docs](#-api-documentation) • [🤝 Contributing](#-contributing)
+
+---
+
+*Developed as Final Project for Software Engineering Bachelor's Degree  
+Faculty of Informatics, Telkom University*
+
+**Author:** [Arzaq Ajradika](https://github.com/Sayiki) (1302210096)
+
 </div>
 
-<p align="center">
-<img src="https://img.shields.io/badge/PHP-8.1%2B-777BB4?style=for-the-badge&logo=php" alt="PHP">
-<img src="https://img.shields.io/badge/Laravel-10.x-FF2D20?style=for-the-badge&logo=laravel" alt="Laravel">
-<img src="https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql" alt="MySQL">
-<img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT">
-</p>
+## 🌟 Key Features
 
-📝 Tentang Proyek
-Ini adalah repositori untuk layanan backend dari aplikasi EduSkill, sebuah sistem informasi untuk Lembaga Pendidikan Non-Formal Bina Essa. Proyek ini dikembangkan sebagai bagian dari Tugas Akhir untuk memenuhi syarat kelulusan Program Studi S1 Rekayasa Perangkat Lunak, Fakultas Informatika, Universitas Telkom.
+<table>
+<tr>
+<td width="50%">
 
-Penulis: Arzaq Ajradika (1302210096)
+### 👥 User Management
+- **Multi-role Authentication** with JWT
+- **Role-based Access Control** (Admin, Head, Participant)
+- Secure registration & login system
 
-📋 Daftar Isi
-Fitur Utama
+### 🎯 Training Management
+- **Full CRUD Operations** for training programs
+- **Mentor & Category Management**
+- **Quota & Capacity Control**
 
-Teknologi yang Digunakan
+</td>
+<td width="50%">
 
-Panduan Instalasi
+### 📋 Registration System
+- **Streamlined Enrollment Process**
+- **Real-time Status Updates**
+- **Automated Notifications**
 
-Dokumentasi API
+### 📊 Content Management
+- **Dynamic Content Updates**
+- **News & Announcements**
+- **Gallery & Banner Management**
+- **Comprehensive Reporting**
 
-Status Proyek
+</td>
+</tr>
+</table>
 
-Kontribusi
+## 🛠️ Tech Stack
 
-Lisensi
+| Category | Technology |
+|----------|------------|
+| **Framework** | ![Laravel](https://img.shields.io/badge/Laravel-10-red?logo=laravel) |
+| **Language** | ![PHP](https://img.shields.io/badge/PHP-8.1%2B-blue?logo=php) |
+| **Database** | ![MySQL](https://img.shields.io/badge/MySQL-8.0-orange?logo=mysql) |
+| **Authentication** | ![JWT](https://img.shields.io/badge/JWT-Auth-black?logo=jsonwebtokens) |
+| **API Testing** | ![Postman](https://img.shields.io/badge/Postman-Testing-orange?logo=postman) |
 
-✨ Fitur Utama
-👤 Manajemen Pengguna & Peran: Sistem autentikasi dan otorisasi berbasis peran menggunakan JWT untuk tiga jenis pengguna: Admin, Ketua, dan Peserta.
+## 🚀 Quick Start
 
-🎓 Pengelolaan Pelatihan: Operasi CRUD (Create, Read, Update, Delete) untuk data pelatihan, termasuk informasi mentor, kategori, dan kuota.
+### 📋 Prerequisites
 
-🚀 Pendaftaran Peserta: Alur pendaftaran bagi peserta untuk mengikuti pelatihan yang tersedia.
+Make sure you have the following installed:
+- ![PHP](https://img.shields.io/badge/PHP-≥8.1-blue?style=flat-square&logo=php) PHP 8.1 or higher
+- ![Composer](https://img.shields.io/badge/Composer-Latest-brown?style=flat-square&logo=composer) Composer
+- ![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square&logo=mysql) MySQL Server
+- ![Git](https://img.shields.io/badge/Git-Latest-red?style=flat-square&logo=git) Git
 
-🔔 Sistem Notifikasi: Mengirimkan notifikasi kepada pengguna terkait status pendaftaran atau pengumuman penting.
+### ⚡ Installation Steps
 
-🖼️ Manajemen Konten: Pengelolaan konten dinamis seperti berita, banner, galeri, dan profil lembaga.
-
-📊 Pelaporan: Fitur bagi admin untuk membuat laporan yang dapat diakses oleh ketua lembaga.
-
-🛠️ Teknologi yang Digunakan
-Framework: Laravel 10
-
-Bahasa: PHP 8.1+
-
-Database: MySQL
-
-Keamanan: tymon/jwt-auth untuk autentikasi API
-
-Pengujian API: Postman
-
-🚀 Panduan Instalasi
-Berikut adalah langkah-langkah untuk menjalankan proyek ini di lingkungan lokal.
-
-Prasyarat
-PHP >= 8.1
-
-Composer
-
-Server Database (MySQL)
-
-Git
-
-Langkah-langkah Instalasi
-Clone repositori ini:
-
-git clone https://github.com/Sayiki/EduSkill_TA
+```bash
+# 1️⃣ Clone the repository
+git clone https://github.com/Sayiki/EduSkill_TA.git
 cd EduSkillBE
 
-Install dependensi PHP menggunakan Composer:
-
+# 2️⃣ Install PHP dependencies
 composer install
 
-Salin file .env.example menjadi .env:
-
+# 3️⃣ Set up environment file
 cp .env.example .env
 
-Buat kunci aplikasi (APP_KEY):
-
+# 4️⃣ Generate application key
 php artisan key:generate
 
-Konfigurasi koneksi database di dalam file .env:
-Sesuaikan variabel berikut dengan konfigurasi database lokal Anda.
+# 5️⃣ Configure your database in .env file
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=eduskill
+# DB_USERNAME=root
+# DB_PASSWORD=
 
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=eduskill
-DB_USERNAME=root
-DB_PASSWORD=
-
-Jalankan migrasi untuk membuat tabel dan isi data awal (seeding):
-
+# 6️⃣ Run migrations and seed data
 php artisan migrate --seed
 
-Jalankan server pengembangan lokal:
-
+# 7️⃣ Start the development server
 php artisan serve
+```
 
-Aplikasi sekarang akan berjalan di http://127.0.0.1:8000.
+🎉 **That's it!** Your API is now running at `http://127.0.0.1:8000`
 
-📚 Dokumentasi API
-Seluruh endpoint API telah diuji menggunakan Postman. Dokumentasi lengkap untuk setiap endpoint, termasuk path, metode HTTP, dan contoh request/response, tersedia di dalam dokumen Tugas Akhir.
+## 📚 API Documentation
 
-Contoh Endpoint
-POST /api/login: Autentikasi pengguna (Admin, Ketua, Peserta).
+### 🔐 Authentication Endpoints
 
-POST /api/register: Membuat akun baru untuk Peserta.
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| `POST` | `/api/login` | User authentication | 🌐 Public |
+| `POST` | `/api/register` | Create participant account | 🌐 Public |
 
-GET /api/pelatihan: Mengambil semua data pelatihan (Akses Publik).
+### 🎓 Training Endpoints
 
-POST /api/daftar-pelatihan/{id}: Mendaftarkan peserta ke sebuah pelatihan (Membutuhkan Autentikasi).
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| `GET` | `/api/pelatihan` | Get all training programs | 🌐 Public |
+| `POST` | `/api/daftar-pelatihan/{id}` | Enroll in training | 🔒 Auth Required |
 
-📈 Status Proyek
-Proyek ini telah selesai dikembangkan dan diuji fungsionalitasnya sebagai bagian dari pemenuhan Tugas Akhir.
+> 📖 **Complete API Documentation** is available in the Final Project document with detailed request/response examples.
 
-🤝 Kontribusi
-Kontribusi dalam bentuk pull request atau issue sangat diterima. Jika Anda ingin berkontribusi, silakan fork repositori ini dan buat pull request.
+## 🏗️ Project Structure
 
-Fork repositori ini.
+```
+EduSkillBE/
+├── 📁 app/
+│   ├── 📁 Http/Controllers/     # API Controllers
+│   ├── 📁 Models/               # Eloquent Models
+│   └── 📁 Middleware/           # Custom Middleware
+├── 📁 database/
+│   ├── 📁 migrations/           # Database Migrations
+│   └── 📁 seeders/              # Data Seeders
+├── 📁 routes/
+│   └── 📄 api.php               # API Routes
+└── 📄 README.md                 # You are here!
+```
 
-Buat branch fitur baru (git checkout -b fitur/FiturBaru).
+## 🚦 Project Status
 
-Commit perubahan Anda (git commit -m 'Menambahkan FiturBaru').
+| Status | Description |
+|--------|-------------|
+| ✅ **Completed** | Development phase finished |
+| ✅ **Tested** | All functionalities tested with Postman |
+| ✅ **Documented** | Comprehensive documentation available |
+| 🎓 **Academic** | Submitted as Final Project |
 
-Push ke branch tersebut (git push origin fitur/FiturBaru).
+## 🤝 Contributing
 
-Buka sebuah Pull Request.
+We welcome contributions! Here's how you can help:
 
-📄 Lisensi
-Proyek ini dilisensikan di bawah Lisensi MIT. Lihat file LICENSE untuk detail lebih lanjut.
+### 🔄 How to Contribute
+
+1. **Fork** this repository
+2. **Create** a feature branch
+   ```bash
+   git checkout -b feature/AmazingFeature
+   ```
+3. **Commit** your changes
+   ```bash
+   git commit -m 'Add some AmazingFeature'
+   ```
+4. **Push** to the branch
+   ```bash
+   git push origin feature/AmazingFeature
+   ```
+5. **Open** a Pull Request
+
+### 🐛 Found a Bug?
+
+Please open an [issue](../../issues) with:
+- Bug description
+- Steps to reproduce
+- Expected behavior
+- Screenshots (if applicable)
+
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+### 💝 Show your support
+
+Give a ⭐️ if this project helped you!
+
+**Made with ❤️ for educational purposes**
+
+[![GitHub](https://img.shields.io/badge/GitHub-Sayiki-black?style=for-the-badge&logo=github)](https://github.com/Sayiki)
+
+</div>
