@@ -24,7 +24,7 @@ return new class extends Migration
             $table->integer('jumlah_peserta')->default(0);
             $table->dateTime('waktu_pengumpulan');
             $table->enum('status_pelatihan', ['Belum Dimulai', 'Sedang berlangsung', 'Selesai'])->default('Belum Dimulai');
-            $table->enum('post_status', ['Draft', 'Published'])->default('Draft');
+            $table->enum('post_status', ['Archived', 'Published'])->default('Archived');
             $table->timestamps();
 
             $table->foreign('admin_id')

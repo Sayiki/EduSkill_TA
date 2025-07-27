@@ -63,7 +63,7 @@ class PelatihanController extends Controller
             'waktu_pengumpulan'    => 'required|date_format:Y-m-d H:i:s|after_or_equal:today',
             'mentor_id'            => 'nullable|integer|exists:mentor,id',
             'status_pelatihan'     => ['sometimes', Rule::in(['Belum Dimulai', 'Sedang berlangsung', 'Selesai'])],
-            'post_status'          => ['sometimes', Rule::in(['Draft', 'Published'])],
+            'post_status'          => ['sometimes', Rule::in(['Archived', 'Published'])],
         ]);
 
         $loggedInUser = $request->user();
@@ -78,7 +78,7 @@ class PelatihanController extends Controller
             $validatedData['status_pelatihan'] = 'Belum Dimulai';
         }
         if (!isset($validatedData['post_status'])) {
-            $validatedData['post_status'] = 'Draft';
+            $validatedData['post_status'] = 'Archived';
         }
 
         $pelatihan = Pelatihan::create($validatedData);
@@ -117,7 +117,7 @@ class PelatihanController extends Controller
             'waktu_pengumpulan'    => 'sometimes|required|date_format:Y-m-d H:i:s|after_or_equal:today',
             'mentor_id'            => 'sometimes|nullable|integer|exists:mentor,id',
             'status_pelatihan'     => ['sometimes', 'required', Rule::in(['Belum Dimulai', 'Sedang berlangsung', 'Selesai'])],
-            'post_status'          => ['sometimes', 'required', Rule::in(['Draft', 'Published'])],
+            'post_status'          => ['sometimes', 'required', Rule::in(['Archived', 'Published'])],
         ]);
 
         if ($request->hasFile('foto_pelatihan')) {
