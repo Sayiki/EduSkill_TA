@@ -24,42 +24,40 @@ class PesertaController extends Controller
     {
         $perPage = $request->query('per_page', 10);
         $registrationStatus = $request->query('registration_status'); 
-        $searchTerm = $request->query('search'); // <<< AKTIFKAN KEMBALI FILTER SEARCH
-        $pelatihanId = $request->query('pelatihan_id'); // <<< AKTIFKAN KEMBALI FILTER PELATIHAN
+        $searchTerm = $request->query('search'); 
+        $pelatihanId = $request->query('pelatihan_id'); 
 
         $query = Peserta::with(['user', 'pendidikan', 'daftar_pelatihan' => function($q_daftar) {
             $q_daftar->with('pelatihan'); 
         }]); 
 
-        // Filter: Hanya Peserta yang memiliki setidaknya SATU pendaftaran dengan status 'diterima'
+
         if ($registrationStatus === 'diterima') {
             $query->whereHas('daftar_pelatihan', function (Builder $q_daftar_has) {
                 $q_daftar_has->where('status', 'diterima');
             });
         }
 
-        // <<< AKTIFKAN KEMBALI FILTER PELATIHAN DI BACKEND
+
         if ($pelatihanId) {
             $query->whereHas('daftar_pelatihan', function (Builder $q_daftar_has) use ($pelatihanId) {
                 $q_daftar_has->where('pelatihan_id', $pelatihanId)
-                             ->where('status', 'diterima'); // Pastikan ini konsisten dengan filter status
+                             ->where('status', 'diterima'); 
             });
         }
 
-        // <<< AKTIFKAN KEMBALI FILTER SEARCH DI BACKEND
+    
         if ($searchTerm) {
             $query->whereHas('user', function (Builder $q_user) use ($searchTerm) {
                 $q_user->where('name', 'like', '%' . $searchTerm . '%');
             });
         }
 
-        // Log::info("PesertaController DEBUG: Total items BEFORE pagination and filters: {$query->count()}"); // Opsional, untuk debug
+        
 
         $paginator = $query->paginate($perPage);
 
-        // Log::info("PesertaController DEBUG: Pagination results - Total: {$paginator->total()}, Last Page: {$paginator->lastPage()}, Next Page URL: " . ($paginator->nextPageUrl() ?? 'NULL')); // Opsional, untuk debug
-
-        // Penting: Pastikan respons JSON sesuai format yang frontend harapkan (root properties)
+        
         return response()->json($paginator);
     }
 

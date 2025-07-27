@@ -13,14 +13,14 @@ class FileController extends Controller
     public function downloadDocument(Request $request, $filename)
     {
         Log::info('Attempting download for: ' . $filename);
-        Log::info('Request Headers: ' . json_encode($request->headers->all())); // <-- TAMBAHKAN INI
-        if (Auth::guard('api')->check()) { // Pastikan Anda menggunakan guard 'api' jika itu yang digunakan JWT
+        Log::info('Request Headers: ' . json_encode($request->headers->all())); 
+        if (Auth::guard('api')->check()) { 
             Log::info('Auth Check: TRUE. User ID: ' . Auth::guard('api')->id());
         } else {
             Log::warning('Auth Check: FALSE. Possible JWT failure.');
         }
 
-        $path = $filename;
+        $path = 'documents/daftar_pelatihan/' . $filename;
         if (Storage::disk('public')->exists($path)) {
             return response()->file(Storage::disk('public')->path($path));
         }

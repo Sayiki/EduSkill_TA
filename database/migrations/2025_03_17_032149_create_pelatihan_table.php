@@ -12,10 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pelatihan', function (Blueprint $table) {
-            // Definisikan semua kolom terlebih dahulu
             $table->id();
             $table->unsignedBigInteger('admin_id')->nullable();
-            $table->unsignedBigInteger('mentor_id')->nullable(); // Didefinisikan setelah admin_id, tanpa ->after()
+            $table->unsignedBigInteger('mentor_id')->nullable(); 
             $table->string('nama_pelatihan', 100);
             $table->string('foto_pelatihan')->nullable();
             $table->unsignedBigInteger('kategori_id')->nullable(); 
@@ -28,17 +27,15 @@ return new class extends Migration
             $table->enum('post_status', ['Draft', 'Published'])->default('Draft');
             $table->timestamps();
 
-            // Kemudian definisikan semua foreign key constraints
             $table->foreign('admin_id')
                   ->references('id')->on('admin')
                   ->onUpdate('cascade')
                   ->onDelete('set null');
-            
+        
             $table->foreign('mentor_id')
                   ->references('id')->on('mentor')
                   ->onUpdate('cascade')
                   ->onDelete('set null');
-
             $table->foreign('kategori_id')
                   ->references('id')->on('kategori_pelatihan') 
                   ->onUpdate('cascade')
