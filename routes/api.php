@@ -84,12 +84,13 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::get('/daftar-pelatihan/current-user', [DaftarPelatihanController::class, 'indexForCurrentUser']);
         Route::get('/profil-saya', [PesertaController::class, 'showMyProfile']);
         Route::put('/profil-saya', [PesertaController::class, 'updateMyProfile']);
-        Route::post('/feedback/{id}', [FeedbackController::class, 'store']);
+        Route::post('/feedback', [FeedbackController::class, 'store']);
         Route::get('/notifikasi-saya', [NotifikasiController::class, 'indexForCurrentUser']);
         Route::get('/notifikasi-saya/{notifikasi_id}', [NotifikasiController::class, 'showForCurrentUser']);
         Route::put('/notifikasi-saya/{notifikasi_id}', [NotifikasiController::class, 'updateStatusForCurrentUser']);
         Route::delete('/notifikasi-saya/{notifikasi_id}', [NotifikasiController::class, 'destroyForCurrentUser']);
         Route::post('/resend', [AuthController::class, 'resend'])->name('verification.send');
+        Route::get('/feedbackcheck/{daftar_pelatihan_id}', [FeedbackController::class, 'checkExistingFeedback']);
             
     });
 
@@ -194,6 +195,3 @@ Route::middleware(['jwt.auth'])->group(function () {
     });
 
 });
-
-
-

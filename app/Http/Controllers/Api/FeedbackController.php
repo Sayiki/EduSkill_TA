@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Validation\Rule; 
 use Illuminate\Support\Facades\Auth;
 use App\Models\DaftarPelatihan;
+use Illuminate\Support\Facades\Log;
 
 class FeedbackController extends Controller
 {
@@ -81,6 +82,37 @@ class FeedbackController extends Controller
             ]),
             201
         );
+    }
+
+    public function checkExistingFeedback($daftar_pelatihan_id)
+    {
+        $user = Auth::user(); 
+        $peserta = $user ? $user->peserta : null; 
+
+        if (!$peserta) {
+            return response()->json(['message' => 'Profil peserta tidak ditemukan untuk pengguna yang sedang login.'], 404);
+        }
+
+        // Check if the daftar_pelatihan record exists and belongs to this peserta
+        $daftarPelatihan = DaftarPelatihan::where('id', $daftar_pelatihan_id)
+                                        ->where('peserta_id', $peserta->id)
+                                        ->first();
+        
+        if (!$daftarPelatihan) {
+            return response()->json([
+                'message' => 'Pendaftaran pelatihan tidak ditemukan atau bukan milik Anda.',
+                'hasFeedback' => false
+            ], 404);
+        }
+
+        // Check if user has already submitted ANY feedback (not specific to this training)
+        $existingFeedback = Feedback::where('peserta_id', $peserta->id)->first();
+        $hasFeedback = !is_null($existingFeedback);
+
+        return response()->json([
+            'hasFeedback' => $hasFeedback,
+            'feedback' => $existingFeedback ? $existingFeedback->load(['peserta.user', 'daftarPelatihan.pelatihan']) : null
+        ]);
     }
 
     /**
